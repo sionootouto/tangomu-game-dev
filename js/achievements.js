@@ -23,6 +23,12 @@ export const achievements = [
     name: "秘密の発見者",
     description: "シークレットを初めて発見する。",
     condition: (saveData) => saveData.discoveredSecrets.length >= 1
+  },
+  {
+    id: "dopa_chance_first",
+    name: "はじめてのどぱちゃんす",
+    description: "DOPA CHANCEを初めて発生させる。",
+    condition: (saveData) => saveData.totalDopaChances >= 1
   }
 ];
 
