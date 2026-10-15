@@ -1,0 +1,141 @@
+
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+  >
+  <title>たんごむチャレンジ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <div class="eyebrow">MINI WORD GAME</div>
+
+    <h1>たんごむチャレンジ</h1>
+
+    <p>7文字をシャッフルして、<strong>tangomu</strong> を完成させよう！</p>
+
+    <div class="letters" id="letters" aria-label="現在の文字列"></div>
+
+    <div class="buttons">
+      <button class="primary" id="shuffle">シャッフル！</button>
+
+      <button class="secondary" id="reset" hidden>最初から</button>
+
+      <button class="secondary" id="debug" hidden>
+        🛠️ クリア演出テスト
+      </button>
+
+      <button id="debugEete" hidden>
+        紫シークレット：eete
+      </button>
+
+      <button id="debugTangomu" hidden>
+        金シークレット：tangomu
+      </button>
+    </div>
+
+    <div id="chanceOverlay" class="chance-overlay" aria-hidden="true">
+      たんごむチャンス！
+    </div>
+
+    <div id="status" role="status" aria-live="polite">
+      「シャッフル！」を押して挑戦しよう。
+    </div>
+
+    <div id="sparkle" class="sparkle" aria-hidden="true">
+      🎉 ✨ 🎉
+    </div>
+
+    <div id="confetti" aria-hidden="true"></div>
+
+    <div class="count">
+      シャッフル回数：<span id="count">0</span>
+    </div>
+
+    <div class="menu-buttons">
+      <button id="openAchievements" class="secondary">
+        🏆 実績一覧
+      </button>
+
+      <button id="resetCount" class="secondary">
+        🔄 回数リセット
+      </button>
+    </div>
+  </main>
+
+  <!-- 実績解除通知 -->
+  <div
+    id="achievementToast"
+    class="achievement-toast"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+  ></div>
+
+  <!-- 実績一覧画面 -->
+  <div
+    id="achievementModal"
+    class="modal-overlay"
+    hidden
+  >
+    <section
+      class="achievement-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="achievementTitle"
+    >
+      <div class="modal-header">
+        <div>
+          <div class="eyebrow">ACHIEVEMENTS</div>
+          <h2 id="achievementTitle">実績一覧</h2>
+        </div>
+
+        <button
+          id="closeAchievements"
+          class="close-button"
+          aria-label="実績一覧を閉じる"
+        >×</button>
+      </div>
+
+      <div class="achievement-progress">
+        <div class="progress-text">
+          <span>解除状況</span>
+          <strong id="achievementCount">0 / 0</strong>
+        </div>
+
+        <div
+          class="progress-track"
+          role="progressbar"
+          aria-label="実績解除率"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          id="achievementProgress"
+        >
+          <div id="achievementProgressBar" class="progress-bar"></div>
+        </div>
+      </div>
+
+      <div
+        id="achievementList"
+        class="achievement-list"
+      ></div>
+
+      <p class="achievement-note">
+        まだ解除していない実績も確認できるよ！
+      </p>
+    </section>
+  </div>
+
+  <!-- セーブデータ削除 -->
+  <button id="saveDeleteButton" class="save-delete-button">
+    セーブデータ削除
+  </button>
+
+  <script type="module" src="./js/game.js"></script>
+</body>
+</html>
