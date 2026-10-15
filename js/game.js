@@ -1,4 +1,3 @@
-
 import { reactionLines } from "./lines.js";
 import { launchConfetti } from "./effects.js";
 import { target, DEBUG_MODE, CHANCE } from "./config.js";
@@ -12,7 +11,6 @@ import {
   refreshAchievementList
 } from "./achievementUI.js";
 import { playSE } from "./sounds.js";
-
 import {
   isDopaChanceActive,
   showDopaEntrance,
@@ -197,7 +195,6 @@ function winGame(isDebug = false) {
 
     statusEl.classList.add("win");
     sparkleEl.classList.add("show");
-
     launchConfetti(confettiEl);
   } else {
     cleared = false;
@@ -352,6 +349,13 @@ function shuffle() {
     !isDopaChanceActive() &&
     Math.random() < DOPA_CHANCE_RATE
   ) {
+    // DOPA CHANCE発生回数を記録
+    saveData.totalDopaChances =
+      (saveData.totalDopaChances ?? 0) + 1;
+
+    persistSave();
+    updateAchievements();
+
     showDopaEntrance({
       statusEl,
       setAnimationLock: (value) => {
