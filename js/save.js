@@ -1,14 +1,14 @@
-
 const SAVE_KEY = "tangomu-save-v1";
 
 const DEFAULT_SAVE = {
   totalShuffles: 0,
   totalClears: 0,
+  totalDopaChances: 0,
   discoveredSecrets: [],
   unlockedAchievements: []
 };
 
-// 保存データを読み込む
+// セーブデータを読み込む
 export function loadSave() {
   try {
     const saved = localStorage.getItem(SAVE_KEY);
@@ -22,21 +22,31 @@ export function loadSave() {
     return {
       ...DEFAULT_SAVE,
       ...data,
+
       totalShuffles:
         Number.isSafeInteger(data.totalShuffles) &&
         data.totalShuffles >= 0
           ? data.totalShuffles
           : 0,
+
       totalClears:
         Number.isSafeInteger(data.totalClears) &&
         data.totalClears >= 0
           ? data.totalClears
           : 0,
+
+      totalDopaChances:
+        Number.isSafeInteger(data.totalDopaChances) &&
+        data.totalDopaChances >= 0
+          ? data.totalDopaChances
+          : 0,
+
       discoveredSecrets: Array.isArray(data.discoveredSecrets)
         ? data.discoveredSecrets.filter(
             (value) => typeof value === "string"
           )
         : [],
+
       unlockedAchievements: Array.isArray(data.unlockedAchievements)
         ? data.unlockedAchievements.filter(
             (value) => typeof value === "string"
@@ -60,10 +70,7 @@ export function saveGame(data) {
   }
 }
 
-
- // セーブデータを削除する
+// セーブデータを削除する
 export function deleteSave() {
   localStorage.removeItem(SAVE_KEY);
 }
-
-
