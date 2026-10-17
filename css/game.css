@@ -1,0 +1,183 @@
+
+/* 文字タイル */
+.letters {
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 4px;
+  margin: 28px 0 22px;
+  min-height: 66px;
+}
+
+.letter {
+  width: clamp(0px, 8vw, 54px);
+  height: clamp(46px, 12vw, 62px);
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #f0edff;
+  color: #4938b4;
+  font-size: clamp(1.35rem, 5vw, 1.8rem);
+  font-weight: 850;
+  box-shadow: inset 0 -3px #dcd5ff;
+}
+
+.letter.correct {
+  background: #d9f8e7;
+  color: #167747;
+  box-shadow: inset 0 -3px #b5e9cc;
+}
+
+/* ボタン配置 */
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* メインボタン */
+#shuffle {
+  width: 100%;
+  min-height: 64px;
+  padding: 18px 24px;
+  border-radius: 18px;
+  font-size: 1.35rem;
+  font-weight: 850;
+  letter-spacing: .04em;
+}
+
+.buttons.has-dopa-skill #shuffle,
+.buttons.has-dopa-skill #dopaSkillActivate {
+  flex: 1 1 calc(50% - 5px);
+  width: calc(50% - 5px);
+  min-width: 0;
+}
+
+#dopaSkillActivate {
+  min-height: 64px;
+  padding: 12px 10px;
+  border: 1px solid #8d72eb;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #7c3aed, #db2777);
+  color: #fff;
+  font-size: clamp(.85rem, 3.5vw, 1rem);
+  font-weight: 850;
+}
+
+#dopaSkillActivate:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+#dopaSkillActivate:disabled {
+  opacity: .65;
+}
+
+#reset {
+  width: 100%;
+  min-height: 64px;
+  padding: 18px 24px;
+  border-radius: 18px;
+  font-size: 1.25rem;
+  font-weight: 850;
+}
+
+/* ステータス */
+#status {
+  min-height: 2em;
+  margin-top: 20px;
+  font-weight: 750;
+  color: #5c5b70;
+  white-space: pre-line;
+}
+
+#status.win {
+  white-space: pre-line;
+  color: #16804a;
+  font-size: 1.5rem;
+  line-height: 1.8;
+  animation: pop .5s ease-out;
+}
+
+.count {
+  margin-top: 8px;
+  font-size: .9rem;
+  color: #9291a4;
+}
+
+/* キラキラ */
+.sparkle {
+  display: none;
+  font-size: 1.7rem;
+  margin-top: 8px;
+}
+
+.sparkle.show {
+  display: block;
+  animation: pop .45s ease-out;
+}
+
+@keyframes pop {
+  from {
+    transform: scale(.5);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 紫色シークレット */
+.letter.rare-purple {
+  background: linear-gradient(
+    135deg,
+    #f0d9ff 0%,
+    #a855f7 18%,
+    #6b21a8 42%,
+    #c084fc 55%,
+    #581c87 78%,
+    #a855f7 100%
+  );
+  color: #fff;
+  border: 2px solid #d8b4fe;
+  text-shadow: 0 1px 2px #3b0764;
+  box-shadow:
+    inset 0 1px 2px #f3e8ff,
+    inset 0 -3px 4px #3b0764,
+    0 0 5px rgba(168, 85, 247, .45);
+}
+
+/* 金色シークレット */
+.letter.rare-gold {
+  background: linear-gradient(
+    135deg,
+    #fff2a6 0%,
+    #d4af37 18%,
+    #8a6d1d 38%,
+    #ffe680 50%,
+    #b8860b 65%,
+    #6f5315 82%,
+    #d4af37 100%
+  );
+  color: #382600;
+  border: 2px solid #f5d76e;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, .35);
+  box-shadow:
+    inset 0 1px 2px #fff8d6,
+    inset 0 -3px 4px #65470a,
+    0 0 7px rgba(212, 175, 55, .4);
+}
+
+/* スマートフォン */
+@media (max-width: 480px) {
+  .letters {
+    gap: 3px;
+  }
+
+  #shuffle,
+  #reset {
+    min-height: 62px;
+  }
+}

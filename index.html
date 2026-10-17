@@ -1,0 +1,334 @@
+
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+  >
+  <title>たんごむチャレンジ</title>
+  
+<link rel="stylesheet" href="./css/base.css">
+<link rel="stylesheet" href="./css/game.css">
+<link rel="stylesheet" href="./css/effects.css">
+<link rel="stylesheet" href="./css/achievements.css">
+<link rel="stylesheet" href="./css/dopa.css">
+<link rel="stylesheet" href="./css/collection.css">
+
+</head>
+<body>
+  <main>
+    <div class="eyebrow">MINI WORD GAME</div>
+
+    <h1>たんごむチャレンジ</h1>
+
+    <p>7文字をシャッフルして、<strong>tangomu</strong> を完成させよう！</p>
+
+    <div class="letters" id="letters" aria-label="現在の文字列"></div>
+
+    <div class="buttons">
+      <button class="primary" id="shuffle">シャッフル！</button>
+      <button id="dopaSkillActivate" class="secondary" hidden disabled>
+        🔥 DOPA CHANCE発動
+      </button>
+
+      <button class="secondary" id="reset" hidden>最初から</button>
+
+      <button class="secondary" id="debug" hidden>
+        🛠️ クリア演出テスト
+      </button>
+
+      <button id="debugEete" hidden>
+        紫シークレット：eete
+      </button>
+
+      <button id="debugTangomu" hidden>
+        金シークレット：tangomu
+      </button>
+    </div>
+
+    <div id="chanceOverlay" class="chance-overlay" aria-hidden="true">
+      たんごむチャンス！
+    </div>
+
+    <div id="status" role="status" aria-live="polite">
+      「シャッフル！」を押して挑戦しよう。
+    </div>
+
+    <div id="sparkle" class="sparkle" aria-hidden="true">
+      🎉 ✨ 🎉
+    </div>
+
+    <div id="confetti" aria-hidden="true"></div>
+
+    <div class="count">
+      シャッフル回数：<span id="count">0</span>
+    </div>
+
+    <div class="count">
+      ドパコイン：<span id="coins">0</span>
+    </div>
+
+    
+<div class="menu-buttons">
+  <button id="openUpgrade" class="secondary">
+    ⬆️ アップグレード
+  </button>
+
+  <button id="openCollection" class="secondary">
+    📖 図鑑・プレイ記録
+  </button>
+
+  <button id="openAchievements" class="secondary">
+    🏆 実績一覧
+  </button>
+
+  <button id="resetCount" class="secondary is-locked">
+    🔄 回数リセット
+  </button>
+</div>
+
+  </main>
+
+  <!-- 実績解除通知 -->
+  <div
+    id="achievementToast"
+    class="achievement-toast"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+  ></div>
+
+  <!-- 実績一覧画面 -->
+  <div
+    id="achievementModal"
+    class="modal-overlay"
+    hidden
+  >
+    <section
+      class="achievement-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="achievementTitle"
+    >
+      <div class="modal-header">
+        <div>
+          <div class="eyebrow">ACHIEVEMENTS</div>
+          <h2 id="achievementTitle">実績一覧</h2>
+        </div>
+
+        <button
+          id="closeAchievements"
+          class="close-button"
+          aria-label="実績一覧を閉じる"
+        >×</button>
+      </div>
+
+      <div class="achievement-progress">
+        <div class="progress-text">
+          <span>解除状況</span>
+          <strong id="achievementCount">0 / 0</strong>
+        </div>
+
+        <div
+          class="progress-track"
+          role="progressbar"
+          aria-label="実績解除率"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          id="achievementProgress"
+        >
+          <div id="achievementProgressBar" class="progress-bar"></div>
+        </div>
+      </div>
+
+      <div
+        id="achievementList"
+        class="achievement-list"
+      ></div>
+
+      <p class="achievement-note">
+        まだ解除していない実績も確認できるよ！
+      </p>
+    </section>
+  </div>
+
+  
+<!-- 図鑑・プレイ記録モーダル -->
+<div id="collectionModal" class="modal-overlay" hidden>
+  <section
+    class="collection-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="collectionTitle"
+  >
+    <div class="modal-header">
+      <div>
+        <div class="eyebrow">COLLECTION</div>
+        <h2 id="collectionTitle">図鑑・プレイ記録</h2>
+      </div>
+      <button
+        id="closeCollection"
+        class="close-button"
+        aria-label="図鑑を閉じる"
+      >×</button>
+    </div>
+
+    <div class="collection-tabs" role="tablist" aria-label="表示内容">
+      <button
+        class="collection-tab active"
+        data-collection-tab="secrets"
+        role="tab"
+        aria-selected="true"
+      >📖 シークレット図鑑</button>
+
+      <button
+        class="collection-tab"
+        data-collection-tab="records"
+        role="tab"
+        aria-selected="false"
+      >📊 プレイ記録</button>
+    </div>
+
+    <section
+      id="secretCollectionPanel"
+      class="collection-panel"
+      role="tabpanel"
+    >
+      <div class="collection-progress">
+        <div class="collection-progress-heading">
+          <span>シークレット発見率</span>
+          <strong id="secretCollectionProgress">0%</strong>
+        </div>
+
+        <div class="collection-progress-heading">
+          <span>発見数</span>
+          <strong id="secretCollectionCount">0 / 10</strong>
+        </div>
+
+        <div
+          class="collection-progress-track"
+          role="progressbar"
+          aria-label="シークレット発見率"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          id="secretCollectionProgressBarTrack"
+        >
+          <div
+            id="secretCollectionProgressBar"
+            class="collection-progress-bar"
+          ></div>
+        </div>
+      </div>
+
+      <div
+        id="secretCollectionList"
+        class="collection-secret-list"
+      ></div>
+
+      <p class="collection-note">
+        シークレットを発見すると、ここに記録されるよ！
+      </p>
+    </section>
+
+    <section
+      id="recordCollectionPanel"
+      class="collection-panel"
+      role="tabpanel"
+      hidden
+    >
+      <div id="playRecordList" class="play-record-list"></div>
+
+      <p class="collection-note">
+        これまでのプレイ記録だよ！
+      </p>
+    </section>
+  </section>
+</div>
+
+<!-- Upgrade画面 -->
+<div id="upgradeModal" class="modal-overlay" hidden>
+  <section
+    class="collection-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="upgradeTitle"
+  >
+    <div class="modal-header">
+      <div>
+        <div class="eyebrow">UPGRADE</div>
+        <h2 id="upgradeTitle">Upgrade</h2>
+      </div>
+      <button
+        id="closeUpgrade"
+        class="close-button"
+        aria-label="Upgrade画面を閉じる"
+      >×</button>
+    </div>
+    <div class="collection-panel">
+      <article class="play-record-card">
+        <span class="play-record-icon">✨</span>
+        <span class="play-record-label">たんごむチャンス発生率</span>
+        <strong id="chanceUpgradeRate" class="play-record-value">1/100</strong>
+      </article>
+
+      <p class="collection-note" id="chanceUpgradeDescription">
+        ドパコインを使って、たんごむチャンスの発生率を上げよう！
+      </p>
+
+      <button id="buyChanceUpgrade" class="secondary">
+        強化する
+      </button>
+      <p class="collection-note" id="chanceUpgradeStatus" role="status" aria-live="polite"></p>
+
+      <section class="dopa-skill-upgrade">
+        <div class="dopa-skill-upgrade-heading">
+          <span class="play-record-icon">⚡</span>
+          <span class="play-record-label">上位たんごむチャンス</span>
+          <strong id="chanceTypeUpgradeState" class="play-record-value">通常</strong>
+        </div>
+        <p class="collection-note" id="chanceTypeUpgradeDescription">
+          通常チャンスのみ発生します。スーパーを解禁すると4文字目まで確定します。
+        </p>
+        <button id="chanceTypeUpgradeButton" class="secondary">
+          スーパーを解禁（50コイン）
+        </button>
+        <p class="collection-note" id="chanceTypeUpgradeStatus" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="dopa-skill-upgrade">
+        <div class="dopa-skill-upgrade-heading">
+          <span class="play-record-icon">🔥</span>
+          <span class="play-record-label">DOPA CHANCE発動技</span>
+          <strong id="dopaSkillState" class="play-record-value">未解放</strong>
+        </div>
+        <p class="collection-note" id="dopaSkillDescription">
+          ドパコイン10枚で解放すると、DOPA CHANCEを任意に発動できます。
+        </p>
+        <p class="collection-note">
+          再使用時間：<strong id="dopaSkillCooldown">10分</strong>
+        </p>
+        <p class="collection-note" id="dopaSkillUpgradeDescription"></p>
+        <div class="dopa-skill-upgrade-actions">
+          <button id="dopaSkillAction" class="secondary">
+            技を解放（10コイン）
+          </button>
+        </div>
+        <p class="collection-note" id="dopaSkillStatus" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+  </section>
+</div>
+
+
+  <!-- セーブデータ削除 -->
+  <button id="saveDeleteButton" class="save-delete-button">
+    セーブデータ削除
+  </button>
+
+  <script type="module" src="./js/game.js"></script>
+</body>
+</html>

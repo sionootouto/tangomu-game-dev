@@ -1,0 +1,108 @@
+
+/* チャンス演出 */
+.chance-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  max-width: calc(100vw - 24px);
+  background: #fff;
+  color: #000;
+  border: 2px solid #000;
+  border-radius: 8px;
+  padding: 20px 28px;
+  font-size: clamp(1.5rem, 6vw, 2.2rem);
+  font-weight: 900;
+  text-align: center;
+  white-space: nowrap;
+  display: none;
+  pointer-events: none;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.chance-overlay.show {
+  display: block;
+  animation: chance-pop .5s ease-out;
+}
+
+@keyframes chance-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(.8);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* 紙吹雪 */
+#confetti {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  width: 10px;
+  height: 16px;
+  animation: confetti-fall 3s ease-in forwards;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-20px) rotate(0deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(110vh) rotate(900deg);
+    opacity: 0;
+  }
+}
+
+/* デバッグボタン */
+#debug[hidden],
+#debugEete[hidden],
+#debugTangomu[hidden] {
+  display: none !important;
+}
+
+/* チャンス演出中の操作対策 */
+body.chance-animation {
+  overscroll-behavior: none;
+}
+
+body.chance-animation,
+body.chance-animation * {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+body.chance-animation button {
+  touch-action: manipulation;
+}
+
+/* チャンス演出中のボタン */
+.buttons button.chance-disabled-look {
+  background-color: #b8b8b8 !important;
+  color: #666 !important;
+  border-color: #aaa !important;
+  opacity: .75;
+  cursor: default;
+}

@@ -1,0 +1,303 @@
+
+/* 図鑑・記録ボタン */
+#openCollection {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 10px;
+  background-color: #f0edff;
+  color: #000;
+  border: 1px solid #f0edff;
+  font-weight: 700;
+}
+
+#openCollection:hover {
+  background-color: #e5dfff;
+}
+
+/* 図鑑モーダル */
+.collection-modal {
+  width: min(100%, 500px);
+  max-height: 85vh;
+  max-height: 85dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e9e7f6;
+  border-radius: 24px;
+  box-shadow: 0 24px 80px #0003;
+  text-align: left;
+  animation: modal-pop .2s ease-out;
+}
+
+.collection-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #eeecf7;
+}
+
+.collection-tab {
+  min-height: 44px;
+  padding: 10px;
+  border: 1px solid #e5e0fa;
+  border-radius: 12px;
+  background: #f7f5ff;
+  color: #45445b;
+  font-weight: 750;
+}
+
+.collection-tab.active {
+  background: #6c5ce7;
+  border-color: #5948cf;
+  color: #fff;
+}
+
+.collection-panel {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 18px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.collection-panel[hidden] {
+  display: none;
+}
+
+.collection-progress {
+  margin-bottom: 16px;
+  padding: 15px;
+  border: 1px solid #e9e7f6;
+  border-radius: 16px;
+  background: #faf9ff;
+}
+
+.collection-progress-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  color: #55536c;
+  font-weight: 750;
+}
+
+.collection-progress-track {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e7e4f3;
+}
+
+.collection-progress-bar {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #6c5ce7, #a18aff);
+  transition: width .3s ease;
+}
+
+/* シークレット一覧 */
+.collection-secret-list {
+  display: grid;
+  gap: 10px;
+}
+
+.collection-secret-card {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e9e7f6;
+  border-radius: 16px;
+  background: #f8f8fb;
+}
+
+.collection-secret-card.discovered {
+  border-color: #d7cfff;
+  background: linear-gradient(135deg, #faf9ff, #f0edff);
+}
+
+.collection-secret-card.secret-purple {
+  border-color: #b99aff;
+  background: linear-gradient(135deg, #fbf8ff, #eee1ff);
+}
+
+.collection-secret-card.secret-gold {
+  border-color: #e6c65b;
+  background: linear-gradient(135deg, #fffdf2, #fff1bd);
+}
+
+.collection-secret-number {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #e9e7f1;
+  color: #77738c;
+  font-weight: 850;
+}
+
+.collection-secret-card.discovered .collection-secret-number {
+  background: #e0d8ff;
+  color: #4938b4;
+}
+
+.collection-secret-card.secret-gold .collection-secret-number {
+  background: #f8df83;
+  color: #765400;
+}
+
+.collection-secret-info {
+  min-width: 0;
+}
+
+.collection-secret-name {
+  margin: 0 0 3px;
+  color: #77768a;
+  font-size: 1rem;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.collection-secret-card.discovered .collection-secret-name {
+  color: #382b8b;
+}
+
+.collection-secret-card.secret-gold .collection-secret-name {
+  color: #765400;
+}
+
+.collection-secret-text {
+  margin: 0;
+  color: #77768a;
+  font-size: .88rem;
+  overflow-wrap: anywhere;
+}
+
+.collection-secret-status {
+  display: inline-block;
+  margin-top: 5px;
+  color: #9291a4;
+  font-size: .75rem;
+  font-weight: 750;
+}
+
+.collection-secret-card.discovered .collection-secret-status {
+  color: #287543;
+}
+
+/* プレイ記録 */
+.play-record-list {
+  display: grid;
+  gap: 10px;
+}
+
+.play-record-card {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #e9e7f6;
+  border-radius: 15px;
+  background: #faf9ff;
+}
+
+.play-record-icon {
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.play-record-label {
+  color: #55536c;
+  font-size: .9rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.play-record-value {
+  color: #4938b4;
+  font-size: 1.15rem;
+  font-weight: 850;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.collection-note {
+  margin: 14px 0 0;
+  color: #9291a4;
+  font-size: .8rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.dopa-skill-upgrade {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid #e9e7f6;
+  border-radius: 16px;
+  background: #faf9ff;
+}
+
+.dopa-skill-upgrade-heading {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.dopa-skill-upgrade-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.dopa-skill-upgrade-actions button {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 0;
+}
+
+.dopa-skill-upgrade .collection-note {
+  margin-top: 0;
+}
+
+@media (max-width: 480px) {
+  .collection-modal {
+    max-height: 88vh;
+    max-height: 88dvh;
+    border-radius: 20px;
+  }
+
+  .collection-tabs {
+    padding: 12px;
+  }
+
+  .collection-panel {
+    padding: 12px;
+  }
+
+  .collection-secret-card {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .play-record-card {
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 12px 10px;
+  }
+
+  .play-record-label {
+    font-size: .82rem;
+  }
+
+  .play-record-value {
+    font-size: 1rem;
+  }
+}

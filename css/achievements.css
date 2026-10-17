@@ -1,0 +1,388 @@
+
+/* メニューボタン */
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+/* 4つのボタンを同じ大きさにする */
+#openCollection,
+#openAchievements,
+#resetCount,
+#openUpgrade {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* 図鑑・プレイ記録 */
+#openCollection {
+  background-color: #f0edff;
+  color: #000;
+  border: 1px solid #f0edff;
+}
+
+#openCollection:hover {
+  background-color: #e5dfff;
+}
+
+/* 実績一覧 */
+#openAchievements {
+  background-color: #f0edff;
+  color: #000;
+  border: 1px solid #f0edff;
+}
+
+#openAchievements:hover {
+  background-color: #e5dfff;
+}
+
+/* Upgrade */
+#openUpgrade {
+  background-color: #f0edff;
+  color: #000;
+  border: 1px solid #f0edff;
+}
+
+#openUpgrade:hover {
+  background-color: #e5dfff;
+}
+
+
+
+/* 回数リセット：使用できないときもクリック可能 */
+
+#resetCount.is-locked {
+
+  background-color: #f0eff7;
+
+  color: #45445b;
+
+  border: 1px solid #f0eff7;
+
+  opacity: 0.7;
+
+  cursor: pointer;
+
+}
+
+/* 使用できるとき */
+
+#resetCount:not(.is-locked) {
+
+  background-color: #f0edff;
+
+  color: #000;
+
+  border: 1px solid #f0edff;
+
+  opacity: 1;
+
+  cursor: pointer;
+
+}
+
+#resetCount:not(.is-locked):hover {
+
+  background-color: #e5dfff;
+
+}
+
+
+/* 実績解除通知 */
+.achievement-toast {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%) translateY(-12px);
+  z-index: 11000;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 14px 20px;
+  border: 2px solid #f5c542;
+  border-radius: 14px;
+  background: #292929;
+  color: #fff;
+  box-shadow: 0 8px 30px #0002;
+  font-weight: 800;
+  text-align: center;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity .25s ease,
+    transform .25s ease,
+    visibility .25s;
+}
+
+.achievement-toast.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* モーダルの背景 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10500;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  background: rgba(25, 23, 43, .62);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* 実績一覧本体 */
+.achievement-modal {
+  width: min(100%, 500px);
+  max-height: 85vh;
+  max-height: 85dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e9e7f6;
+  border-radius: 24px;
+  box-shadow: 0 24px 80px #0003;
+  text-align: left;
+  animation: modal-pop .2s ease-out;
+}
+
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: scale(.96) translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 22px 16px;
+  border-bottom: 1px solid #eeecf7;
+}
+
+.modal-header h2 {
+  margin: 4px 0 0;
+  font-size: 1.6rem;
+  letter-spacing: -.03em;
+}
+
+.close-button {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 50%;
+  background: #f0eff7;
+  color: #45445b;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+/* 解除進捗 */
+.achievement-progress {
+  padding: 18px 22px;
+  background: #faf9ff;
+  border-bottom: 1px solid #eeecf7;
+}
+
+.progress-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-size: .95rem;
+  color: #66677a;
+}
+
+.progress-text strong {
+  color: #4938b4;
+  font-size: 1rem;
+}
+
+.progress-track {
+  height: 10px;
+  overflow: hidden;
+  background: #e7e4f3;
+  border-radius: 999px;
+}
+
+.progress-bar {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #6c5ce7, #a18aff);
+  transition: width .3s ease;
+}
+
+/* 実績リスト */
+.achievement-list {
+  display: grid;
+  gap: 10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 18px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.achievement-card {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 13px;
+  border: 1px solid #e9e7f6;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.achievement-card.unlocked {
+  border-color: #d7cfff;
+  background: linear-gradient(135deg, #faf9ff, #f0edff);
+}
+
+.achievement-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #eeedf3;
+  color: #9a98a8;
+  font-size: 1.7rem;
+}
+
+.achievement-card.unlocked .achievement-icon {
+  background: #e4dcff;
+  color: #5c45cf;
+}
+
+.achievement-info {
+  min-width: 0;
+}
+
+.achievement-name {
+  margin: 0 0 4px;
+  color: #a09eae;
+  font-size: 1rem;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.achievement-card.unlocked .achievement-name {
+  color: #382b8b;
+}
+
+.achievement-description {
+  margin: 0;
+  color: #77768a;
+  font-size: .86rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.achievement-status {
+  display: inline-block;
+  margin-top: 7px;
+  color: #a09eae;
+  font-size: .76rem;
+  font-weight: 750;
+}
+
+.achievement-card.unlocked .achievement-status {
+  color: #287543;
+}
+
+.achievement-note {
+  flex: 0 0 auto;
+  padding: 0 22px 18px;
+  font-size: .82rem;
+  text-align: center;
+  color: #9291a4;
+}
+
+/* セーブデータ削除ボタン */
+.save-delete-button {
+  position: fixed;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: 9000;
+  padding: 9px 12px;
+  border: 1px solid #888;
+  border-radius: 10px;
+  background: #333;
+  color: #fff;
+  font-size: .78rem;
+  box-shadow: 0 3px 12px #0002;
+}
+
+/* スマートフォン：実績画面 */
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .achievement-modal {
+    max-height: 88vh;
+    max-height: 88dvh;
+    border-radius: 20px;
+  }
+
+  .modal-header {
+    padding: 18px 16px 14px;
+  }
+
+  .achievement-progress {
+    padding: 14px 16px;
+  }
+
+  .achievement-list {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .achievement-card {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .achievement-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 1.5rem;
+  }
+
+  .achievement-note {
+    padding: 0 12px 14px;
+  }
+
+  .save-delete-button {
+    font-size: .72rem;
+    padding: 8px 10px;
+  }
+}
