@@ -253,11 +253,11 @@ export function createShuffleManager({
       return false;
     }
 
-    playSE("chance");
-
     const chanceType = chooseChanceType(
       state.saveData.chanceTypeUpgradeLevel ?? 0
     );
+    playSE(chanceType.sound);
+
     state.chanceMode = true;
     state.chanceStep = 0;
 
@@ -291,6 +291,7 @@ export function createShuffleManager({
       {
         label: "たんごむチャンス",
         guaranteedLetters: 3,
+        sound: "chance",
         weight: CHANCE_TYPE_UPGRADE_WEIGHTS.normal
       }
     ];
@@ -299,6 +300,7 @@ export function createShuffleManager({
       types.push({
         label: "スーパーたんごむチャンス",
         guaranteedLetters: 4,
+        sound: "superChance",
         weight: CHANCE_TYPE_UPGRADE_WEIGHTS.super
       });
     }
@@ -307,6 +309,7 @@ export function createShuffleManager({
       types.push({
         label: "ハイパーたんごむチャンス",
         guaranteedLetters: 5,
+        sound: "hyperChance",
         weight: CHANCE_TYPE_UPGRADE_WEIGHTS.hyper
       });
     }

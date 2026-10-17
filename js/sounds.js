@@ -4,6 +4,8 @@ const soundFiles = {
   clear: "../sounds/clear.mp3",
   secret: "../sounds/secret.mp3",
   chance: "../sounds/chance.mp3",
+  superChance: "../sounds/superchance.mp3",
+  hyperChance: "../sounds/hyperchance.mp3",
   chanceMiss: "../sounds/chance-miss.mp3",
 
   // DOPA CHANCE専用音源
