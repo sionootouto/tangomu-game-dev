@@ -7,7 +7,8 @@ import {
   CHANCE_TYPE_UPGRADE_COSTS,
   DOPA_SKILL_UNLOCK_COST,
   DOPA_SKILL_COOLDOWNS,
-  DOPA_SKILL_UPGRADE_COSTS
+  DOPA_SKILL_UPGRADE_COSTS,
+  SECRET_HISTORY_OFFSET
 } from "./config.js";
 import { shuffledCopy } from "./shuffle.js";
 import { loadSave, saveGame, deleteSave } from "./save.js";
@@ -151,19 +152,25 @@ function rewardSecretCoins(secret, isFirstDiscovery) {
 }
 
 function recordReaction(reactionId) {
-  const sequence = (state.saveData.reactionHistorySequence ?? 0) + 1;
-  const history = state.saveData.reactionHistory ?? [];
+  recordReactionHistoryEntry(reactionId);
   const counts = { ...(state.saveData.reactionCounts ?? {}) };
 
-  state.saveData.reactionHistory = [
-    ...history,
-    { sequence, reactionId }
-  ].slice(-10);
-  state.saveData.reactionHistorySequence = sequence;
   counts[reactionId] = (counts[reactionId] ?? 0) + 1;
   state.saveData.reactionCounts = counts;
   persistSave();
   updateAchievements();
+}
+
+function recordSecretHistory(secret) {
+  recordReactionHistoryEntry(SECRET_HISTORY_OFFSET + secret.number);
+}
+
+function recordReactionHistoryEntry(historyId) {
+  const sequence = (state.saveData.reactionHistorySequence ?? 0) + 1;
+  const history = state.saveData.reactionHistory ?? [];
+
+  state.saveData.reactionHistory = [...history, historyId].slice(-10);
+  state.saveData.reactionHistorySequence = sequence;
 }
 
 // ========================================
@@ -304,6 +311,7 @@ const shuffleManager = createShuffleManager({
   recordShuffle,
   recordClear,
   rewardSecretCoins,
+  recordSecretHistory,
   winGame,
   reset: () => reset(),
   startSecretPause,

@@ -42,6 +42,7 @@ export function createShuffleManager({
   recordShuffle,
   recordClear,
   rewardSecretCoins,
+  recordSecretHistory,
   winGame,
   reset,
   startSecretPause,
@@ -69,6 +70,7 @@ export function createShuffleManager({
       playSE("secret");
 
       if (!result.isDebug) {
+        recordSecretHistory(result.secret);
         recordSecretDiscovery(result.secret, {
           saveData: state.saveData,
           persistSave,

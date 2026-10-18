@@ -12,6 +12,14 @@
 // 実績一覧
 // ========================================
 
+import { SECRET_HISTORY_OFFSET } from "./config.js";
+
+function getReactionHistory(saveData) {
+  return Array.isArray(saveData.reactionHistory)
+    ? saveData.reactionHistory.filter(Number.isSafeInteger)
+    : [];
+}
+
 export const achievements = [
   {
     id: "shuffle_akagingokyu",
@@ -192,12 +200,12 @@ export const achievements = [
     description: "「たんごむ」を三連続で引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionHistory(saveData);
       return history.some(
-        (entry, index) =>
-          entry.reactionId === 1 &&
-          history[index + 1]?.reactionId === 1 &&
-          history[index + 2]?.reactionId === 1
+        (historyId, index) =>
+          historyId === 1 &&
+          history[index + 1] === 1 &&
+          history[index + 2] === 1
       );
     }
   },
@@ -207,11 +215,11 @@ export const achievements = [
     description: "「たんごうむ」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionHistory(saveData);
       return history.some(
-        (entry, index) =>
-          entry.reactionId === 2 &&
-          history[index + 1]?.reactionId === 1
+        (historyId, index) =>
+          historyId === 2 &&
+          history[index + 1] === 1
       );
     }
   },
@@ -221,11 +229,11 @@ export const achievements = [
     description: "「たんぐもう」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionHistory(saveData);
       return history.some(
-        (entry, index) =>
-          entry.reactionId === 3 &&
-          history[index + 1]?.reactionId === 1
+        (historyId, index) =>
+          historyId === 3 &&
+          history[index + 1] === 1
       );
     }
   },
@@ -235,11 +243,11 @@ export const achievements = [
     description: "「たんぐも」又は「たぬぐも」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionHistory(saveData);
       return history.some(
-        (entry, index) =>
-          (entry.reactionId === 5 || entry.reactionId === 24) &&
-          history[index + 1]?.reactionId === 1
+        (historyId, index) =>
+          (historyId === 5 || historyId === 24) &&
+          history[index + 1] === 1
       );
     }
   },
@@ -249,11 +257,11 @@ export const achievements = [
     description: "「たぬもぐ」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionHistory(saveData);
       return history.some(
-        (entry, index) =>
-          entry.reactionId === 19 &&
-          history[index + 1]?.reactionId === 1
+        (historyId, index) =>
+          historyId === 19 &&
+          history[index + 1] === 1
       );
     }
   },
@@ -263,11 +271,11 @@ export const achievements = [
     description: "「たのぐむ」→「たのうぐむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionHistory(saveData);
       return history.some(
-        (entry, index) =>
-          (entry.reactionId === 7 || entry.reactionId === 8) &&
-          history[index + 1]?.reactionId === 12
+        (historyId, index) =>
+          (historyId === 7 || historyId === 8) &&
+          history[index + 1] === 12
       );
     }
   },
@@ -277,13 +285,13 @@ export const achievements = [
     description: "「たぬごむ」、「たんごむ」を連続で引く。（順不同）",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionHistory(saveData);
       return history.some(
-        (entry, index) =>
-          (entry.reactionId === 23 &&
-          history[index + 1]?.reactionId === 1) ||
-          (entry.reactionId === 1 &&
-          history[index + 1]?.reactionId === 23)
+        (historyId, index) =>
+          (historyId === 23 &&
+          history[index + 1] === 1) ||
+          (historyId === 1 &&
+          history[index + 1] === 23)
       );
     }
   },
@@ -293,13 +301,29 @@ export const achievements = [
     description: "「たんむご」、「たぬむご」を連続で引く。（順不同）",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionHistory(saveData);
       return history.some(
-        (entry, index) =>
-          (entry.reactionId === 18 &&
-          history[index + 1]?.reactionId === 20) ||
-          (entry.reactionId === 20 &&
-          history[index + 1]?.reactionId === 18)
+        (historyId, index) =>
+          (historyId === 18 &&
+          history[index + 1] === 20) ||
+          (historyId === 20 &&
+          history[index + 1] === 18)
+      );
+    }
+  },
+  {
+    id: "tanshio",
+    name: "タン塩",
+    description: "「たんごむ」、シークレット8番を連続で引く。（順不同）",
+    visibility: "secret",
+    condition: (saveData) => {
+      const history = getReactionHistory(saveData);
+      return history.some(
+        (historyId, index) =>
+          (historyId === 1 &&
+          history[index + 1] === SECRET_HISTORY_OFFSET + 8) ||
+          (historyId === SECRET_HISTORY_OFFSET + 8 &&
+          history[index + 1] === 1)
       );
     }
   },

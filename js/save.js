@@ -1,4 +1,7 @@
+import { SECRET_HISTORY_OFFSET } from "./config.js";
+
 const SAVE_KEY = "tangomu-save-v1";
+const MAX_HISTORY_ID = SECRET_HISTORY_OFFSET + 10;
 
 const DEFAULT_SAVE = {
   totalShuffles: 0,
@@ -112,14 +115,33 @@ export function loadSave() {
 
       reactionHistory: Array.isArray(data.reactionHistory)
         ? data.reactionHistory
-            .filter(
-              (entry) =>
+            .map((entry) => {
+              if (Number.isSafeInteger(entry)) {
+                return entry;
+              }
+              if (
                 entry &&
-                Number.isSafeInteger(entry.sequence) &&
-                entry.sequence > 0 &&
                 Number.isSafeInteger(entry.reactionId) &&
                 entry.reactionId >= 1 &&
-                entry.reactionId <= 24
+                entry.reactionId <= SECRET_HISTORY_OFFSET
+              ) {
+                return entry.reactionId;
+              }
+              if (
+                entry &&
+                Number.isSafeInteger(entry.secretNumber) &&
+                entry.secretNumber >= 1 &&
+                entry.secretNumber <= 10
+              ) {
+                return SECRET_HISTORY_OFFSET + entry.secretNumber;
+              }
+              return null;
+            })
+            .filter(
+              (historyId) =>
+                Number.isSafeInteger(historyId) &&
+                historyId >= 1 &&
+                historyId <= MAX_HISTORY_ID
             )
             .slice(-10)
         : [],
@@ -171,13 +193,16 @@ function loadReactionCounts(data) {
 
   if (Array.isArray(data.reactionHistory)) {
     data.reactionHistory.forEach((entry) => {
+      const reactionId =
+        Number.isSafeInteger(entry) && entry <= SECRET_HISTORY_OFFSET
+          ? entry
+          : entry?.reactionId;
       if (
-        entry &&
-        Number.isSafeInteger(entry.reactionId) &&
-        entry.reactionId >= 1 &&
-        entry.reactionId <= 24
+        Number.isSafeInteger(reactionId) &&
+        reactionId >= 1 &&
+        reactionId <= SECRET_HISTORY_OFFSET
       ) {
-      counts[entry.reactionId]++;
+        counts[reactionId]++;
       }
     });
   }
