@@ -8,15 +8,40 @@
  * secret        : 未解除では名前も隠す
  */
 
+import { SECRET_HISTORY_ID_OFFSET } from "./save.js";
+
 // ========================================
 // 実績一覧
 // ========================================
 
-import { SECRET_HISTORY_OFFSET } from "./config.js";
+function getReactionAndSecretHistory(saveData) {
+  if (Array.isArray(saveData.reactionAndSecretHistory)) {
+    return saveData.reactionAndSecretHistory.filter(
+      (id) =>
+        Number.isSafeInteger(id) &&
+        id >= 1 &&
+        id <= SECRET_HISTORY_ID_OFFSET + 10
+    );
+  }
 
-function getReactionHistory(saveData) {
   return Array.isArray(saveData.reactionHistory)
-    ? saveData.reactionHistory.filter(Number.isSafeInteger)
+    ? saveData.reactionHistory
+        .filter(
+          (entry) =>
+            entry &&
+            Number.isSafeInteger(entry.sequence) &&
+            ((Number.isSafeInteger(entry.reactionId) &&
+              entry.reactionId >= 1 &&
+              entry.reactionId <= SECRET_HISTORY_ID_OFFSET) ||
+              (Number.isSafeInteger(entry.secretNumber) &&
+                entry.secretNumber >= 1 &&
+                entry.secretNumber <= 10))
+        )
+        .map((entry) =>
+          Number.isSafeInteger(entry.reactionId)
+            ? entry.reactionId
+            : SECRET_HISTORY_ID_OFFSET + entry.secretNumber
+        )
     : [];
 }
 
@@ -200,10 +225,10 @@ export const achievements = [
     description: "「たんごむ」を三連続で引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionHistory(saveData);
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (historyId, index) =>
-          historyId === 1 &&
+        (id, index) =>
+          id === 1 &&
           history[index + 1] === 1 &&
           history[index + 2] === 1
       );
@@ -215,11 +240,9 @@ export const achievements = [
     description: "「たんごうむ」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionHistory(saveData);
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (historyId, index) =>
-          historyId === 2 &&
-          history[index + 1] === 1
+        (id, index) => id === 2 && history[index + 1] === 1
       );
     }
   },
@@ -229,11 +252,9 @@ export const achievements = [
     description: "「たんぐもう」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionHistory(saveData);
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (historyId, index) =>
-          historyId === 3 &&
-          history[index + 1] === 1
+        (id, index) => id === 3 && history[index + 1] === 1
       );
     }
   },
@@ -243,11 +264,10 @@ export const achievements = [
     description: "「たんぐも」又は「たぬぐも」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionHistory(saveData);
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (historyId, index) =>
-          (historyId === 5 || historyId === 24) &&
-          history[index + 1] === 1
+        (id, index) =>
+          (id === 5 || id === 24) && history[index + 1] === 1
       );
     }
   },
@@ -257,11 +277,9 @@ export const achievements = [
     description: "「たぬもぐ」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionHistory(saveData);
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (historyId, index) =>
-          historyId === 19 &&
-          history[index + 1] === 1
+        (id, index) => id === 19 && history[index + 1] === 1
       );
     }
   },
@@ -271,11 +289,10 @@ export const achievements = [
     description: "「たのぐむ」→「たのうぐむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionHistory(saveData);
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (historyId, index) =>
-          (historyId === 7 || historyId === 8) &&
-          history[index + 1] === 12
+        (id, index) =>
+          (id === 7 || id === 8) && history[index + 1] === 12
       );
     }
   },
@@ -285,13 +302,11 @@ export const achievements = [
     description: "「たぬごむ」、「たんごむ」を連続で引く。（順不同）",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionHistory(saveData);
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (historyId, index) =>
-          (historyId === 23 &&
-          history[index + 1] === 1) ||
-          (historyId === 1 &&
-          history[index + 1] === 23)
+        (id, index) =>
+          (id === 23 && history[index + 1] === 1) ||
+          (id === 1 && history[index + 1] === 23)
       );
     }
   },
@@ -301,13 +316,11 @@ export const achievements = [
     description: "「たんむご」、「たぬむご」を連続で引く。（順不同）",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionHistory(saveData);
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (historyId, index) =>
-          (historyId === 18 &&
-          history[index + 1] === 20) ||
-          (historyId === 20 &&
-          history[index + 1] === 18)
+        (id, index) =>
+          (id === 18 && history[index + 1] === 20) ||
+          (id === 20 && history[index + 1] === 18)
       );
     }
   },
@@ -317,13 +330,12 @@ export const achievements = [
     description: "「たんごむ」、シークレット8番を連続で引く。（順不同）",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionHistory(saveData);
+      const history = getReactionAndSecretHistory(saveData);
+      const secret8Id = SECRET_HISTORY_ID_OFFSET + 8;
       return history.some(
-        (historyId, index) =>
-          (historyId === 1 &&
-          history[index + 1] === SECRET_HISTORY_OFFSET + 8) ||
-          (historyId === SECRET_HISTORY_OFFSET + 8 &&
-          history[index + 1] === 1)
+        (id, index) =>
+          (id === 1 && history[index + 1] === secret8Id) ||
+          (id === secret8Id && history[index + 1] === 1)
       );
     }
   },

@@ -1,7 +1,6 @@
-import { SECRET_HISTORY_OFFSET } from "./config.js";
-
 const SAVE_KEY = "tangomu-save-v1";
-const MAX_HISTORY_ID = SECRET_HISTORY_OFFSET + 10;
+// Reaction IDs are 1-24; secret history IDs continue from 25.
+export const SECRET_HISTORY_ID_OFFSET = 24;
 
 const DEFAULT_SAVE = {
   totalShuffles: 0,
@@ -18,6 +17,7 @@ const DEFAULT_SAVE = {
   dopaSkillLastUsedAt: 0,
   totalDopaChances: 0,
   reactionHistory: [],
+  reactionAndSecretHistory: [],
   reactionHistorySequence: 0,
   reactionCounts: {},
   discoveredSecrets: [],
@@ -34,6 +34,7 @@ export function loadSave() {
     }
 
     const data = JSON.parse(saved);
+    const reactionHistory = loadReactionHistory(data);
 
     return {
       ...DEFAULT_SAVE,
@@ -113,46 +114,33 @@ export function loadSave() {
           ? data.totalDopaChances
           : 0,
 
-      reactionHistory: Array.isArray(data.reactionHistory)
-        ? data.reactionHistory
-            .map((entry) => {
-              if (Number.isSafeInteger(entry)) {
-                return entry;
-              }
-              if (
-                entry &&
-                Number.isSafeInteger(entry.reactionId) &&
-                entry.reactionId >= 1 &&
-                entry.reactionId <= SECRET_HISTORY_OFFSET
-              ) {
-                return entry.reactionId;
-              }
-              if (
-                entry &&
-                Number.isSafeInteger(entry.secretNumber) &&
-                entry.secretNumber >= 1 &&
-                entry.secretNumber <= 10
-              ) {
-                return SECRET_HISTORY_OFFSET + entry.secretNumber;
-              }
-              return null;
-            })
+      reactionHistory,
+
+      reactionAndSecretHistory: Array.isArray(data.reactionAndSecretHistory)
+        ? data.reactionAndSecretHistory
             .filter(
-              (historyId) =>
-                Number.isSafeInteger(historyId) &&
-                historyId >= 1 &&
-                historyId <= MAX_HISTORY_ID
+              (id) =>
+                Number.isSafeInteger(id) &&
+                id >= 1 &&
+                id <= SECRET_HISTORY_ID_OFFSET + 10
             )
             .slice(-10)
-        : [],
+        : reactionHistory.map((entry) =>
+            Number.isSafeInteger(entry.reactionId)
+              ? entry.reactionId
+              : SECRET_HISTORY_ID_OFFSET + entry.secretNumber
+          ),
 
       reactionHistorySequence:
         Number.isSafeInteger(data.reactionHistorySequence) &&
         data.reactionHistorySequence >= 0
           ? data.reactionHistorySequence
-          : 0,
+          : reactionHistory.reduce(
+              (sequence, entry) => Math.max(sequence, entry.sequence),
+              0
+            ),
 
-      reactionCounts: loadReactionCounts(data),
+      reactionCounts: loadReactionCounts({ ...data, reactionHistory }),
 
       discoveredSecrets: Array.isArray(data.discoveredSecrets)
         ? data.discoveredSecrets.filter(
@@ -170,6 +158,41 @@ export function loadSave() {
     console.error("セーブデータを読み込めませんでした", error);
     return { ...DEFAULT_SAVE };
   }
+}
+
+function loadReactionHistory(data) {
+  return Array.isArray(data.reactionHistory)
+    ? data.reactionHistory
+        .map((entry, index) => {
+          if (
+            !Number.isSafeInteger(entry) ||
+            entry < 1 ||
+            entry > SECRET_HISTORY_ID_OFFSET + 10
+          ) {
+            return entry;
+          }
+
+          return entry <= SECRET_HISTORY_ID_OFFSET
+            ? { sequence: index + 1, reactionId: entry }
+            : {
+                sequence: index + 1,
+                secretNumber: entry - SECRET_HISTORY_ID_OFFSET
+              };
+        })
+        .filter(
+          (entry) =>
+            entry &&
+            Number.isSafeInteger(entry.sequence) &&
+            entry.sequence > 0 &&
+            ((Number.isSafeInteger(entry.reactionId) &&
+              entry.reactionId >= 1 &&
+              entry.reactionId <= SECRET_HISTORY_ID_OFFSET) ||
+              (Number.isSafeInteger(entry.secretNumber) &&
+                entry.secretNumber >= 1 &&
+                entry.secretNumber <= 10))
+        )
+        .slice(-10)
+    : [];
 }
 
 function loadReactionCounts(data) {
@@ -193,16 +216,13 @@ function loadReactionCounts(data) {
 
   if (Array.isArray(data.reactionHistory)) {
     data.reactionHistory.forEach((entry) => {
-      const reactionId =
-        Number.isSafeInteger(entry) && entry <= SECRET_HISTORY_OFFSET
-          ? entry
-          : entry?.reactionId;
       if (
-        Number.isSafeInteger(reactionId) &&
-        reactionId >= 1 &&
-        reactionId <= SECRET_HISTORY_OFFSET
+        entry &&
+        Number.isSafeInteger(entry.reactionId) &&
+        entry.reactionId >= 1 &&
+        entry.reactionId <= SECRET_HISTORY_ID_OFFSET
       ) {
-        counts[reactionId]++;
+        counts[entry.reactionId]++;
       }
     });
   }

@@ -7,11 +7,15 @@ import {
   CHANCE_TYPE_UPGRADE_COSTS,
   DOPA_SKILL_UNLOCK_COST,
   DOPA_SKILL_COOLDOWNS,
-  DOPA_SKILL_UPGRADE_COSTS,
-  SECRET_HISTORY_OFFSET
+  DOPA_SKILL_UPGRADE_COSTS
 } from "./config.js";
 import { shuffledCopy } from "./shuffle.js";
-import { loadSave, saveGame, deleteSave } from "./save.js";
+import {
+  loadSave,
+  saveGame,
+  deleteSave,
+  SECRET_HISTORY_ID_OFFSET
+} from "./save.js";
 import { achievements, checkAchievements } from "./achievements.js";
 import {
   setupAchievementUI,
@@ -152,7 +156,7 @@ function rewardSecretCoins(secret, isFirstDiscovery) {
 }
 
 function recordReaction(reactionId) {
-  recordReactionHistoryEntry(reactionId);
+  recordReactionHistoryEntry({ reactionId });
   const counts = { ...(state.saveData.reactionCounts ?? {}) };
 
   counts[reactionId] = (counts[reactionId] ?? 0) + 1;
@@ -162,14 +166,23 @@ function recordReaction(reactionId) {
 }
 
 function recordSecretHistory(secret) {
-  recordReactionHistoryEntry(SECRET_HISTORY_OFFSET + secret.number);
+  recordReactionHistoryEntry({ secretNumber: secret.number });
 }
 
-function recordReactionHistoryEntry(historyId) {
+function recordReactionHistoryEntry(entry) {
   const sequence = (state.saveData.reactionHistorySequence ?? 0) + 1;
   const history = state.saveData.reactionHistory ?? [];
+  const numericId =
+    entry.reactionId ?? SECRET_HISTORY_ID_OFFSET + entry.secretNumber;
 
-  state.saveData.reactionHistory = [...history, historyId].slice(-10);
+  state.saveData.reactionHistory = [
+    ...history,
+    { sequence, ...entry }
+  ].slice(-10);
+  state.saveData.reactionAndSecretHistory = [
+    ...(state.saveData.reactionAndSecretHistory ?? []),
+    numericId
+  ].slice(-10);
   state.saveData.reactionHistorySequence = sequence;
 }
 
