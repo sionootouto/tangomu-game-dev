@@ -8,9 +8,43 @@
  * secret        : 未解除では名前も隠す
  */
 
+import { SECRET_HISTORY_ID_OFFSET } from "./save.js";
+import { GACHA_ITEMS } from "./gachaItems.js";
+
 // ========================================
 // 実績一覧
 // ========================================
+
+function getReactionAndSecretHistory(saveData) {
+  if (Array.isArray(saveData.reactionAndSecretHistory)) {
+    return saveData.reactionAndSecretHistory.filter(
+      (id) =>
+        Number.isSafeInteger(id) &&
+        id >= 1 &&
+        id <= SECRET_HISTORY_ID_OFFSET + 10
+    );
+  }
+
+  return Array.isArray(saveData.reactionHistory)
+    ? saveData.reactionHistory
+        .filter(
+          (entry) =>
+            entry &&
+            Number.isSafeInteger(entry.sequence) &&
+            ((Number.isSafeInteger(entry.reactionId) &&
+              entry.reactionId >= 1 &&
+              entry.reactionId <= SECRET_HISTORY_ID_OFFSET) ||
+              (Number.isSafeInteger(entry.secretNumber) &&
+                entry.secretNumber >= 1 &&
+                entry.secretNumber <= 10))
+        )
+        .map((entry) =>
+          Number.isSafeInteger(entry.reactionId)
+            ? entry.reactionId
+            : SECRET_HISTORY_ID_OFFSET + entry.secretNumber
+        )
+    : [];
+}
 
 export const achievements = [
   {
@@ -163,6 +197,37 @@ export const achievements = [
     condition: (saveData) => saveData.totalDopaChances >= 100
   },
   {
+    id: "gacha_first_draw",
+    name: "はじめての割り箸ガチャ",
+    description: "割り箸ガチャを1回引く。",
+    visibility: "normal",
+    condition: (saveData) => saveData.totalGachaDraws >= 1
+  },
+  {
+    id: "gacha_ten_draws",
+    name: "綺麗に割れた",
+    description: "割り箸ガチャを累計10回引く。",
+    visibility: "conditionOnly",
+    condition: (saveData) => saveData.totalGachaDraws >= 10
+  },
+  {
+    id: "gacha_hundred_draws",
+    name: "割り箸は食べないと減らない",
+    description: "割り箸ガチャを累計100回引く。",
+    visibility: "secret",
+    condition: (saveData) => saveData.totalGachaDraws >= 100
+  },
+  {
+    id: "gacha_collect_all",
+    name: "たんごむファン",
+    description: "割り箸ガチャの景品をすべて集める。",
+    visibility: "secret",
+    condition: (saveData) =>
+      GACHA_ITEMS.every(
+        (item) => (saveData.gachaItems?.[item.id] ?? 0) >= 1
+      )
+  },
+  {
     id: "jirikiage",
     name: "地力上げ",
     description: "「たんもぐ」を1回引く。",
@@ -192,12 +257,12 @@ export const achievements = [
     description: "「たんごむ」を三連続で引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (entry, index) =>
-          entry.reactionId === 1 &&
-          history[index + 1]?.reactionId === 1 &&
-          history[index + 2]?.reactionId === 1
+        (id, index) =>
+          id === 1 &&
+          history[index + 1] === 1 &&
+          history[index + 2] === 1
       );
     }
   },
@@ -207,11 +272,9 @@ export const achievements = [
     description: "「たんごうむ」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (entry, index) =>
-          entry.reactionId === 2 &&
-          history[index + 1]?.reactionId === 1
+        (id, index) => id === 2 && history[index + 1] === 1
       );
     }
   },
@@ -221,11 +284,9 @@ export const achievements = [
     description: "「たんぐもう」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (entry, index) =>
-          entry.reactionId === 3 &&
-          history[index + 1]?.reactionId === 1
+        (id, index) => id === 3 && history[index + 1] === 1
       );
     }
   },
@@ -235,11 +296,10 @@ export const achievements = [
     description: "「たんぐも」又は「たぬぐも」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (entry, index) =>
-          (entry.reactionId === 5 || entry.reactionId === 24) &&
-          history[index + 1]?.reactionId === 1
+        (id, index) =>
+          (id === 5 || id === 24) && history[index + 1] === 1
       );
     }
   },
@@ -249,11 +309,9 @@ export const achievements = [
     description: "「たぬもぐ」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (entry, index) =>
-          entry.reactionId === 19 &&
-          history[index + 1]?.reactionId === 1
+        (id, index) => id === 19 && history[index + 1] === 1
       );
     }
   },
@@ -263,11 +321,10 @@ export const achievements = [
     description: "「たのぐむ」→「たのうぐむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (entry, index) =>
-          (entry.reactionId === 7 || entry.reactionId === 8) &&
-          history[index + 1]?.reactionId === 12
+        (id, index) =>
+          (id === 7 || id === 8) && history[index + 1] === 12
       );
     }
   },
@@ -277,13 +334,11 @@ export const achievements = [
     description: "「たぬごむ」、「たんごむ」を連続で引く。（順不同）",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (entry, index) =>
-          (entry.reactionId === 23 &&
-          history[index + 1]?.reactionId === 1) ||
-          (entry.reactionId === 1 &&
-          history[index + 1]?.reactionId === 23)
+        (id, index) =>
+          (id === 23 && history[index + 1] === 1) ||
+          (id === 1 && history[index + 1] === 23)
       );
     }
   },
@@ -293,13 +348,26 @@ export const achievements = [
     description: "「たんむご」、「たぬむご」を連続で引く。（順不同）",
     visibility: "secret",
     condition: (saveData) => {
-      const history = saveData.reactionHistory ?? [];
+      const history = getReactionAndSecretHistory(saveData);
       return history.some(
-        (entry, index) =>
-          (entry.reactionId === 18 &&
-          history[index + 1]?.reactionId === 20) ||
-          (entry.reactionId === 20 &&
-          history[index + 1]?.reactionId === 18)
+        (id, index) =>
+          (id === 18 && history[index + 1] === 20) ||
+          (id === 20 && history[index + 1] === 18)
+      );
+    }
+  },
+  {
+    id: "tanshio",
+    name: "タン塩",
+    description: "「たんごむ」、シークレット8番を連続で引く。（順不同）",
+    visibility: "secret",
+    condition: (saveData) => {
+      const history = getReactionAndSecretHistory(saveData);
+      const secret8Id = SECRET_HISTORY_ID_OFFSET + 8;
+      return history.some(
+        (id, index) =>
+          (id === 1 && history[index + 1] === secret8Id) ||
+          (id === secret8Id && history[index + 1] === 1)
       );
     }
   },
