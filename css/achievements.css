@@ -11,7 +11,8 @@
 #openCollection,
 #openAchievements,
 #resetCount,
-#openUpgrade {
+#openUpgrade,
+#openGacha {
   box-sizing: border-box;
   width: 100%;
   min-height: 48px;
@@ -55,7 +56,18 @@
   background-color: #e5dfff;
 }
 
+#openGacha {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  background-color: #fff4df;
+  color: #000;
+  border: 1px solid #ffe4b3;
+}
 
+#openGacha:hover {
+  background-color: #ffebc9;
+}
 
 /* 回数リセット：使用できないときもクリック可能 */
 

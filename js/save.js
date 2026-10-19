@@ -1,3 +1,5 @@
+import { GACHA_ITEMS } from "./gachaItems.js";
+
 const SAVE_KEY = "tangomu-save-v1";
 // Reaction IDs are 1-24; secret history IDs continue from 25.
 export const SECRET_HISTORY_ID_OFFSET = 24;
@@ -8,7 +10,7 @@ const DEFAULT_SAVE = {
   normalShuffleClears: 0,
   chanceClears: 0,
   clearedWithin100Shuffles: false,
-  coins: 0,
+  coins: 40,
   chanceUpgradeLevel: 0,
   chanceGuaranteedLettersLevel: 0,
   chanceTypeUpgradeLevel: 0,
@@ -20,6 +22,9 @@ const DEFAULT_SAVE = {
   reactionAndSecretHistory: [],
   reactionHistorySequence: 0,
   reactionCounts: {},
+  gachaItems: Object.fromEntries(
+    GACHA_ITEMS.map((item) => [item.id, 0])
+  ),
   discoveredSecrets: [],
   unlockedAchievements: []
 };
@@ -142,6 +147,8 @@ export function loadSave() {
 
       reactionCounts: loadReactionCounts({ ...data, reactionHistory }),
 
+      gachaItems: loadGachaItems(data.gachaItems),
+
       discoveredSecrets: Array.isArray(data.discoveredSecrets)
         ? data.discoveredSecrets.filter(
             (value) => typeof value === "string"
@@ -158,6 +165,18 @@ export function loadSave() {
     console.error("セーブデータを読み込めませんでした", error);
     return { ...DEFAULT_SAVE };
   }
+}
+
+function loadGachaItems(data) {
+  return Object.fromEntries(
+    GACHA_ITEMS.map((item) => {
+      const count = data?.[item.id];
+      return [
+        item.id,
+        Number.isSafeInteger(count) && count >= 0 ? count : 0
+      ];
+    })
+  );
 }
 
 function loadReactionHistory(data) {
