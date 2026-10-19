@@ -10,7 +10,7 @@ const DEFAULT_SAVE = {
   normalShuffleClears: 0,
   chanceClears: 0,
   clearedWithin100Shuffles: false,
-  coins: 40,
+  coins: 0,
   chanceUpgradeLevel: 0,
   chanceGuaranteedLettersLevel: 0,
   chanceTypeUpgradeLevel: 0,
@@ -18,6 +18,7 @@ const DEFAULT_SAVE = {
   dopaSkillUpgradeLevel: 0,
   dopaSkillLastUsedAt: 0,
   totalDopaChances: 0,
+  totalGachaDraws: 0,
   reactionHistory: [],
   reactionAndSecretHistory: [],
   reactionHistorySequence: 0,
@@ -117,6 +118,12 @@ export function loadSave() {
         Number.isSafeInteger(data.totalDopaChances) &&
         data.totalDopaChances >= 0
           ? data.totalDopaChances
+          : 0,
+
+      totalGachaDraws:
+        Number.isSafeInteger(data.totalGachaDraws) &&
+        data.totalGachaDraws >= 0
+          ? data.totalGachaDraws
           : 0,
 
       reactionHistory,

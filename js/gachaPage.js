@@ -1,5 +1,7 @@
 import { GACHA_ITEMS, SUCCESS_GACHA_ITEMS } from "./gachaItems.js";
 import { loadSave, saveGame } from "./save.js";
+import { checkAchievements } from "./achievements.js";
+import { playSE } from "./sounds.js";
 
 const DRAW_COST = 10;
 const REVEAL_DELAY = 1250;
@@ -96,22 +98,25 @@ async function draw() {
 
   const previousCoins = saveData.coins;
   const previousItems = saveData.gachaItems;
+  const previousDraws = saveData.totalGachaDraws;
   const item = rollItem();
   const nextItems = { ...saveData.gachaItems };
-  nextItems[item.id] = (nextItems[item.id] ?? 0) + 1;
 
   saveData.coins -= DRAW_COST;
   saveData.gachaItems = nextItems;
+  saveData.totalGachaDraws++;
 
   if (!saveGame(saveData)) {
     saveData.coins = previousCoins;
     saveData.gachaItems = previousItems;
+    saveData.totalGachaDraws = previousDraws;
     status.textContent = "保存できなかったため、ガチャを中止しました。";
     refresh();
     return;
   }
 
   setDrawingState(true);
+  playSE("breakChopsticks");
   stage.classList.remove("breaking");
   stageText.textContent = "うまく割れるか...？";
   status.textContent = "抽選中です…";
@@ -123,16 +128,35 @@ async function draw() {
   stage.classList.add("breaking");
   await delay(REVEAL_DELAY);
 
+  nextItems[item.id] = (nextItems[item.id] ?? 0) + 1;
+  const previousAchievements = [...saveData.unlockedAchievements];
+  const newlyUnlocked = checkAchievements(saveData);
+  const resultSaved = saveGame(saveData);
+
   machine.classList.remove("breaking");
   stage.classList.remove("breaking");
   stageText.textContent = MESSAGES[item.id] ?? MESSAGES.default;
-  status.textContent =
+  playSE(item.id === "chopsticks" ? "gachaSuka" : "gachaCollect");
+  const resultMessage =
     item.id === "chopsticks"
       ? "割り箸を獲得！"
       : `${item.name}を獲得！`;
+  status.textContent = resultSaved
+    ? [
+        resultMessage,
+        ...newlyUnlocked.map(
+          (achievement) => `実績解除！ ${achievement.name}`
+        )
+      ].join(" ")
+    : `${resultMessage} 実績・景品を保存できませんでした。`;
+
+  if (!resultSaved) {
+    saveData.gachaItems = previousItems;
+    saveData.unlockedAchievements = previousAchievements;
+  }
 
   setDrawingState(false);
-  refresh([item.id]);
+  refresh(resultSaved ? [item.id] : []);
 }
 
 drawOnceButton.addEventListener("click", draw);

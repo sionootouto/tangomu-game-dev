@@ -9,6 +9,7 @@
  */
 
 import { SECRET_HISTORY_ID_OFFSET } from "./save.js";
+import { GACHA_ITEMS } from "./gachaItems.js";
 
 // ========================================
 // 実績一覧
@@ -194,6 +195,37 @@ export const achievements = [
     description: "累計100回DOPA CHANCEを発生させる。",
     visibility: "secret",
     condition: (saveData) => saveData.totalDopaChances >= 100
+  },
+  {
+    id: "gacha_first_draw",
+    name: "はじめての割り箸ガチャ",
+    description: "割り箸ガチャを1回引く。",
+    visibility: "normal",
+    condition: (saveData) => saveData.totalGachaDraws >= 1
+  },
+  {
+    id: "gacha_ten_draws",
+    name: "綺麗に割れた",
+    description: "割り箸ガチャを累計10回引く。",
+    visibility: "conditionOnly",
+    condition: (saveData) => saveData.totalGachaDraws >= 10
+  },
+  {
+    id: "gacha_hundred_draws",
+    name: "割り箸は食べないと減らない",
+    description: "割り箸ガチャを累計100回引く。",
+    visibility: "secret",
+    condition: (saveData) => saveData.totalGachaDraws >= 100
+  },
+  {
+    id: "gacha_collect_all",
+    name: "たんごむファン",
+    description: "割り箸ガチャの景品をすべて集める。",
+    visibility: "secret",
+    condition: (saveData) =>
+      GACHA_ITEMS.every(
+        (item) => (saveData.gachaItems?.[item.id] ?? 0) >= 1
+      )
   },
   {
     id: "jirikiage",

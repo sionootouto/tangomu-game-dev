@@ -152,7 +152,7 @@
 }
 
 .chopstick-piece-lower {
-  transform-origin: 236px 36px;
+  transform-origin: 273px -36px;
 }
 
 .chopstick-connector {
@@ -170,11 +170,11 @@
 }
 
 .gacha-stage.breaking .chopstick-piece-upper {
-  transform: rotate(9deg);
+  transform: rotate(11deg);
 }
 
 .gacha-stage.breaking .chopstick-piece-lower {
-  transform: rotate(-9deg);
+  transform: rotate(-11deg);
 }
 
 .gacha-stage.breaking .chopstick-connector {
