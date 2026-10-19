@@ -2,7 +2,6 @@ import { GACHA_ITEMS, SUCCESS_GACHA_ITEMS } from "./gachaItems.js";
 import { loadSave, saveGame } from "./save.js";
 
 const DRAW_COST = 10;
-const MULTI_DRAW_COUNT = 10;
 const REVEAL_DELAY = 1250;
 
 const saveData = loadSave();
@@ -11,18 +10,26 @@ const machine = document.querySelector(".gacha-machine");
 const stage = document.getElementById("gachaStage");
 const stageText = document.getElementById("gachaStageText");
 const drawOnceButton = document.getElementById("drawGachaOnce");
-const drawTenButton = document.getElementById("drawGachaTen");
 const inventory = document.getElementById("gachaInventory");
-const resultsSection = document.getElementById("gachaResultsSection");
-const results = document.getElementById("gachaResults");
-const resultSummary = document.getElementById("gachaResultSummary");
 const status = document.getElementById("gachaStatus");
+let isDrawing = false;
 
-function refresh() {
+export const MESSAGES = {
+  chopsticks: "ハズレ。ラーメンでもたんもぐしよう。",
+  energyDrink: "当たり！たんさんも喜んでいるよ。",
+  tennisGrip: "当たり！これを機に巻き替えてみようか。",
+  poultice: "当たり！もはや体の一部。",
+  waterBottle: "当たり！ガチ勢の仲間入りかも？",
+  parkingTicket: "当たり！ご利用は計画的に。",
+  famichiki: "当たり！腹痛にならないといいな。",
+  twoyen: "当たり！でも、これで何ができるんだ？",
+  ipad: "当たり！とりあえずプロセカするか。",
+};
+
+function refresh(newItemIds = []) {
   coins.textContent = String(saveData.coins);
-  drawOnceButton.disabled = saveData.coins < DRAW_COST;
-  drawTenButton.disabled = saveData.coins < DRAW_COST * MULTI_DRAW_COUNT;
-  renderInventory();
+  drawOnceButton.disabled = isDrawing || saveData.coins < DRAW_COST;
+  renderInventory(newItemIds);
 }
 
 function renderInventory(newItemIds = []) {
@@ -36,15 +43,28 @@ function renderInventory(newItemIds = []) {
       card.classList.add("new-item");
     }
 
-    const label = document.createElement("span");
-    label.className = "gacha-item-label";
-    label.textContent = `${item.icon} ${item.name}`;
+    const image = document.createElement(item.image ? "img" : "span");
+    image.className = item.image
+      ? "gacha-item-image"
+      : "gacha-item-icon";
+    if (item.image) {
+      image.src = item.image;
+      image.alt = "";
+      image.setAttribute("aria-hidden", "true");
+    } else {
+      image.setAttribute("aria-hidden", "true");
+      image.textContent = item.icon;
+    }
+
+    const name = document.createElement("span");
+    name.className = "gacha-item-label";
+    name.textContent = item.name;
 
     const count = document.createElement("strong");
     count.className = "gacha-item-count";
     count.textContent = `${itemCounts[item.id] ?? 0} 個`;
 
-    card.append(label, count);
+    card.append(image, name, count);
     inventory.appendChild(card);
   });
 }
@@ -63,28 +83,24 @@ function delay(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-function setDrawingState(isDrawing) {
+function setDrawingState(drawing) {
+  isDrawing = drawing;
   drawOnceButton.disabled = isDrawing || saveData.coins < DRAW_COST;
-  drawTenButton.disabled =
-    isDrawing || saveData.coins < DRAW_COST * MULTI_DRAW_COUNT;
 }
 
-async function draw(drawCount) {
-  const cost = DRAW_COST * drawCount;
-  if (saveData.coins < cost) {
+async function draw() {
+  if (saveData.coins < DRAW_COST) {
     status.textContent = "Coinsが足りません。ゲームに戻ってCoinsを集めよう。";
     return;
   }
 
   const previousCoins = saveData.coins;
   const previousItems = saveData.gachaItems;
-  const drawResults = Array.from({ length: drawCount }, rollItem);
+  const item = rollItem();
   const nextItems = { ...saveData.gachaItems };
-  drawResults.forEach((item) => {
-    nextItems[item.id] = (nextItems[item.id] ?? 0) + 1;
-  });
+  nextItems[item.id] = (nextItems[item.id] ?? 0) + 1;
 
-  saveData.coins -= cost;
+  saveData.coins -= DRAW_COST;
   saveData.gachaItems = nextItems;
 
   if (!saveGame(saveData)) {
@@ -97,79 +113,28 @@ async function draw(drawCount) {
 
   setDrawingState(true);
   stage.classList.remove("breaking");
-  stageText.textContent = "割り箸をセット…";
-  status.textContent = `${drawCount}回分の抽選を始めます！`;
-  results.replaceChildren();
-  resultsSection.hidden = false;
-  resultSummary.textContent = `0 / ${drawCount}`;
+  stageText.textContent = "うまく割れるか...？";
+  status.textContent = "抽選中です…";
   refresh();
 
-  const highlightedItems = new Set();
-  for (let index = 0; index < drawResults.length; index++) {
-    const item = drawResults[index];
-    machine.classList.add("breaking");
-    stage.classList.remove("breaking");
-    void stage.offsetWidth;
-    stage.classList.add("breaking");
-    stageText.textContent = "うまく割れるか...？";
-    await delay(REVEAL_DELAY);
+  machine.classList.add("breaking");
+  stage.classList.remove("breaking");
+  void stage.offsetWidth;
+  stage.classList.add("breaking");
+  await delay(REVEAL_DELAY);
 
-    const card = createResultCard(item, index + 1);
-    results.appendChild(card);
-    void card.offsetWidth;
-    card.classList.add("revealed");
-    highlightedItems.add(item.id);
-    renderInventory([...highlightedItems]);
-
-    const revealed = index + 1;
-    resultSummary.textContent = `${revealed} / ${drawCount}`;
-    machine.classList.remove("breaking");
-    stage.classList.remove("breaking");
-    stageText.textContent =
-      item.id === "chopsticks" ? "今回はハズレ。" : "大当たり！";
-    status.textContent =
-      item.id === "chopsticks"
-        ? `${revealed}回目：割り箸を獲得！`
-        : `${revealed}回目：${item.name}を獲得！`;
-
-    if (revealed < drawResults.length) {
-      await delay(170);
-    }
-  }
-
-  stageText.textContent = "また挑戦してね";
   machine.classList.remove("breaking");
-  status.textContent = `${drawCount}回分の結果が出ました！ アイテムはコレクションに追加されています。`;
+  stage.classList.remove("breaking");
+  stageText.textContent = MESSAGES[item.id] ?? MESSAGES.default;
+  status.textContent =
+    item.id === "chopsticks"
+      ? "割り箸を獲得！"
+      : `${item.name}を獲得！`;
+
   setDrawingState(false);
-  refresh();
+  refresh([item.id]);
 }
 
-function createResultCard(item, drawNumber) {
-  const card = document.createElement("li");
-  card.className = "gacha-result-card";
-  if (item.id !== "chopsticks") {
-    card.classList.add("success");
-  }
-
-  const icon = document.createElement("span");
-  icon.className = "gacha-result-icon";
-  icon.textContent = item.icon;
-
-  const name = document.createElement("span");
-  name.className = "gacha-result-name";
-  name.textContent = item.name;
-
-  const label = document.createElement("small");
-  label.className = "gacha-result-label";
-  label.textContent = `${drawNumber}回目・${
-    item.id === "chopsticks" ? "ハズレ" : "成功！"
-  }`;
-  name.appendChild(label);
-  card.append(icon, name);
-  return card;
-}
-
-drawOnceButton.addEventListener("click", () => draw(1));
-drawTenButton.addEventListener("click", () => draw(MULTI_DRAW_COUNT));
+drawOnceButton.addEventListener("click", draw);
 
 refresh();

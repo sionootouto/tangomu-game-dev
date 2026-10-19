@@ -25,48 +25,38 @@
     <section class="gacha-intro" aria-labelledby="gachaTitle">
       <div class="gacha-eyebrow">CHOPSTICKS CHALLENGE</div>
       <h1 id="gachaTitle">割り箸ガチャ</h1>
-      <p>祈りを込めて、ぱきっと一本。</p>
+      <p>割り箸をクリックして、祈りを込めてぱきっと一本。</p>
     </section>
 
     <section class="gacha-machine" aria-label="割り箸を割る演出">
       <div class="gacha-glow" aria-hidden="true"></div>
       <div id="gachaStage" class="gacha-stage">
-        <svg
-          class="chopsticks"
-          viewBox="0 0 260 240"
-          role="img"
-          aria-label="短い端がつながった割り箸"
+        <button
+          id="drawGachaOnce"
+          class="chopsticks-button"
+          aria-label="割り箸を割る（10 Coins）"
         >
-          <g class="chopstick-piece chopstick-piece-upper">
-            <path d="M 12 194 L 200 12 L 217 24 L 27 207 Z"></path>
-          </g>
-          <g class="chopstick-piece chopstick-piece-lower">
-            <path d="M 24 206 L 212 24 L 229 36 L 39 219 Z"></path>
-          </g>
-          <path class="chopstick-connector" d="M 200 12 L 217 24 L 229 36 L 212 24 Z"></path>
-        </svg>
+          <svg class="chopsticks" viewBox="0 0 260 240" aria-hidden="true">
+            <g class="chopstick-piece chopstick-piece-upper">
+              <path d="M 12 194 L 200 12 L 217 24 L 27 207 Z"></path>
+            </g>
+            <g class="chopstick-piece chopstick-piece-lower">
+              <path d="M 24 206 L 212 24 L 229 36 L 39 219 Z"></path>
+            </g>
+            <path class="chopstick-connector" d="M 200 12 L 217 24 L 229 36 L 212 24 Z"></path>
+          </svg>
+        </button>
         <span id="gachaStageText" class="gacha-stage-text">
-          割り箸を選んでね
+          割り箸をクリックしてね
         </span>
       </div>
       <div id="gachaBurst" class="gacha-burst" aria-hidden="true"></div>
     </section>
 
     <p class="gacha-rules">
-      1回 <strong>10 Coins</strong> ・ 成功率 <strong>1/3</strong><br>
+      1回 <strong>10 Coins</strong> ・ 成功率 <strong>1/5</strong><br>
       成功すると4種類の景品から等確率で1つ。
     </p>
-
-    <div class="gacha-actions">
-      <button id="drawGachaOnce" class="gacha-draw-button">
-        <span>🥢 1回割る</span>
-        <small>10 Coins</small>
-      </button>
-      <button id="drawGachaTen" class="gacha-draw-button gacha-draw-ten">
-        <span>✨ 10回まとめて割る</span>
-        <small>100 Coins</small>
-      </button>
-    </div>
 
     <p id="gachaStatus" class="gacha-status" role="status" aria-live="polite">
       アイテムはコレクション用。ゲーム内の効果はありません。
@@ -80,18 +70,6 @@
       <div id="gachaInventory" class="gacha-inventory"></div>
     </section>
 
-    <section
-      id="gachaResultsSection"
-      class="gacha-results-section"
-      aria-labelledby="resultsTitle"
-      hidden
-    >
-      <div class="gacha-section-heading">
-        <h2 id="resultsTitle">今回の結果</h2>
-        <span id="gachaResultSummary"></span>
-      </div>
-      <ol id="gachaResults" class="gacha-results" aria-live="off"></ol>
-    </section>
   </main>
 
   <script type="module" src="./js/gachaPage.js"></script>
