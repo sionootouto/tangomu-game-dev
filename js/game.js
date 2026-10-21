@@ -14,7 +14,8 @@ import {
   loadSave,
   saveGame,
   deleteSave,
-  SECRET_HISTORY_ID_OFFSET
+  SECRET_HISTORY_ID_OFFSET,
+  SUKA_HISTORY_ENTRY
 } from "./save.js";
 import { achievements, checkAchievements } from "./achievements.js";
 import {
@@ -126,10 +127,10 @@ function recordClear(clearType = "normal") {
   if (state.count <= 10) {
     state.saveData.clearedWithin10Shuffles = true;
   }
-  if (state.count <= 50) {
+  if (state.count <= 50 && state.count > 10) {
     state.saveData.clearedWithin50Shuffles = true;
   }
-  if (state.count <= 100) {
+  if (state.count <= 100 && state.count > 50) {
     state.saveData.clearedWithin100Shuffles = true;
   }
   if (clearType === "chance") {
@@ -179,11 +180,20 @@ function recordReactionHistoryEntry(entry) {
     ...history,
     { sequence, ...entry }
   ].slice(-10);
-  state.saveData.reactionAndSecretHistory = [
-    ...(state.saveData.reactionAndSecretHistory ?? []),
+  state.saveData.shuffleHistory = [
+    ...(state.saveData.shuffleHistory ?? []),
     numericId
   ].slice(-10);
   state.saveData.reactionHistorySequence = sequence;
+}
+
+function recordSukaHistoryEntry() {
+  state.saveData.shuffleHistory = [
+    ...(state.saveData.shuffleHistory ?? []),
+    SUKA_HISTORY_ENTRY
+  ].slice(-10);
+  persistSave();
+  updateAchievements();
 }
 
 // ========================================
@@ -285,6 +295,7 @@ const { winGame } = createGameActions({
   state,
   recordClear,
   recordReaction,
+  recordSukaHistoryEntry,
   render,
   updateButtons,
   statusEl,
@@ -325,6 +336,8 @@ const shuffleManager = createShuffleManager({
   recordClear,
   rewardSecretCoins,
   recordSecretHistory,
+  recordReaction,
+  recordSukaHistoryEntry,
   winGame,
   reset: () => reset(),
   startSecretPause,

@@ -3,6 +3,7 @@ import { GACHA_ITEMS } from "./gachaItems.js";
 const SAVE_KEY = "tangomu-save-v1";
 // Reaction IDs are 1-24; secret history IDs continue from 25.
 export const SECRET_HISTORY_ID_OFFSET = 24;
+export const SUKA_HISTORY_ENTRY = "Suka";
 
 const DEFAULT_SAVE = {
   totalShuffles: 0,
@@ -20,7 +21,7 @@ const DEFAULT_SAVE = {
   totalDopaChances: 0,
   totalGachaDraws: 0,
   reactionHistory: [],
-  reactionAndSecretHistory: [],
+  shuffleHistory: [],
   reactionHistorySequence: 0,
   reactionCounts: {},
   gachaItems: Object.fromEntries(
@@ -41,10 +42,12 @@ export function loadSave() {
 
     const data = JSON.parse(saved);
     const reactionHistory = loadReactionHistory(data);
+    const saveData = { ...data };
+    delete saveData.reactionAndSecretHistory;
 
     return {
       ...DEFAULT_SAVE,
-      ...data,
+      ...saveData,
 
       totalShuffles:
         Number.isSafeInteger(data.totalShuffles) &&
@@ -128,20 +131,7 @@ export function loadSave() {
 
       reactionHistory,
 
-      reactionAndSecretHistory: Array.isArray(data.reactionAndSecretHistory)
-        ? data.reactionAndSecretHistory
-            .filter(
-              (id) =>
-                Number.isSafeInteger(id) &&
-                id >= 1 &&
-                id <= SECRET_HISTORY_ID_OFFSET + 10
-            )
-            .slice(-10)
-        : reactionHistory.map((entry) =>
-            Number.isSafeInteger(entry.reactionId)
-              ? entry.reactionId
-              : SECRET_HISTORY_ID_OFFSET + entry.secretNumber
-          ),
+      shuffleHistory: loadShuffleHistory(data, reactionHistory),
 
       reactionHistorySequence:
         Number.isSafeInteger(data.reactionHistorySequence) &&
@@ -172,6 +162,28 @@ export function loadSave() {
     console.error("セーブデータを読み込めませんでした", error);
     return { ...DEFAULT_SAVE };
   }
+}
+
+function loadShuffleHistory(data, reactionHistory) {
+  const history = Array.isArray(data.shuffleHistory)
+    ? data.shuffleHistory
+    : Array.isArray(data.reactionAndSecretHistory)
+      ? data.reactionAndSecretHistory
+      : reactionHistory.map((entry) =>
+          Number.isSafeInteger(entry.reactionId)
+            ? entry.reactionId
+            : SECRET_HISTORY_ID_OFFSET + entry.secretNumber
+        );
+
+  return history
+    .filter(
+      (entry) =>
+        entry === SUKA_HISTORY_ENTRY ||
+        (Number.isSafeInteger(entry) &&
+          entry >= 1 &&
+          entry <= SECRET_HISTORY_ID_OFFSET + 10)
+    )
+    .slice(-10);
 }
 
 function loadGachaItems(data) {

@@ -8,20 +8,28 @@
  * secret        : 未解除では名前も隠す
  */
 
-import { SECRET_HISTORY_ID_OFFSET } from "./save.js";
+import {
+  SECRET_HISTORY_ID_OFFSET,
+  SUKA_HISTORY_ENTRY
+} from "./save.js";
 import { GACHA_ITEMS } from "./gachaItems.js";
 
 // ========================================
 // 実績一覧
 // ========================================
 
-function getReactionAndSecretHistory(saveData) {
-  if (Array.isArray(saveData.reactionAndSecretHistory)) {
-    return saveData.reactionAndSecretHistory.filter(
-      (id) =>
-        Number.isSafeInteger(id) &&
-        id >= 1 &&
-        id <= SECRET_HISTORY_ID_OFFSET + 10
+function getShuffleHistory(saveData) {
+  const history = Array.isArray(saveData.shuffleHistory)
+    ? saveData.shuffleHistory
+    : saveData.reactionAndSecretHistory;
+
+  if (Array.isArray(history)) {
+    return history.filter(
+      (entry) =>
+        entry === SUKA_HISTORY_ENTRY ||
+        (Number.isSafeInteger(entry) &&
+          entry >= 1 &&
+          entry <= SECRET_HISTORY_ID_OFFSET + 10)
     );
   }
 
@@ -257,7 +265,7 @@ export const achievements = [
     description: "「たんごむ」を三連続で引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionAndSecretHistory(saveData);
+      const history = getShuffleHistory(saveData);
       return history.some(
         (id, index) =>
           id === 1 &&
@@ -272,7 +280,7 @@ export const achievements = [
     description: "「たんごうむ」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionAndSecretHistory(saveData);
+      const history = getShuffleHistory(saveData);
       return history.some(
         (id, index) => id === 2 && history[index + 1] === 1
       );
@@ -284,7 +292,7 @@ export const achievements = [
     description: "「たんぐもう」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionAndSecretHistory(saveData);
+      const history = getShuffleHistory(saveData);
       return history.some(
         (id, index) => id === 3 && history[index + 1] === 1
       );
@@ -296,7 +304,7 @@ export const achievements = [
     description: "「たんぐも」又は「たぬぐも」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionAndSecretHistory(saveData);
+      const history = getShuffleHistory(saveData);
       return history.some(
         (id, index) =>
           (id === 5 || id === 24) && history[index + 1] === 1
@@ -309,7 +317,7 @@ export const achievements = [
     description: "「たぬもぐ」→「たんごむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionAndSecretHistory(saveData);
+      const history = getShuffleHistory(saveData);
       return history.some(
         (id, index) => id === 19 && history[index + 1] === 1
       );
@@ -321,7 +329,7 @@ export const achievements = [
     description: "「たのぐむ」→「たのうぐむ」の順を引く。",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionAndSecretHistory(saveData);
+      const history = getShuffleHistory(saveData);
       return history.some(
         (id, index) =>
           (id === 7 || id === 8) && history[index + 1] === 12
@@ -334,7 +342,7 @@ export const achievements = [
     description: "「たぬごむ」、「たんごむ」を連続で引く。（順不同）",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionAndSecretHistory(saveData);
+      const history = getShuffleHistory(saveData);
       return history.some(
         (id, index) =>
           (id === 23 && history[index + 1] === 1) ||
@@ -348,7 +356,7 @@ export const achievements = [
     description: "「たんむご」、「たぬむご」を連続で引く。（順不同）",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionAndSecretHistory(saveData);
+      const history = getShuffleHistory(saveData);
       return history.some(
         (id, index) =>
           (id === 18 && history[index + 1] === 20) ||
@@ -362,7 +370,7 @@ export const achievements = [
     description: "「たんごむ」、シークレット8番を連続で引く。（順不同）",
     visibility: "secret",
     condition: (saveData) => {
-      const history = getReactionAndSecretHistory(saveData);
+      const history = getShuffleHistory(saveData);
       const secret8Id = SECRET_HISTORY_ID_OFFSET + 8;
       return history.some(
         (id, index) =>

@@ -8,6 +8,7 @@ export function createGameActions({
   state,
   recordClear,
   recordReaction,
+  recordSukaHistoryEntry,
   render,
   updateButtons,
   statusEl,
@@ -28,7 +29,11 @@ export function createGameActions({
     if (isBigWin) {
       if (!isDebug) {
         recordClear(isChanceClear ? "chance" : "normal");
-        recordReaction(reaction.id);
+        if (reaction) {
+          recordReaction(reaction.id);
+        } else {
+          recordSukaHistoryEntry();
+        }
       }
 
       state.cleared = true;
@@ -52,8 +57,12 @@ export function createGameActions({
 
       statusEl.textContent = reaction?.text || "...";
 
-      if (reaction) {
-        recordReaction(reaction.id);
+      if (!isDebug) {
+        if (reaction) {
+          recordReaction(reaction.id);
+        } else {
+          recordSukaHistoryEntry();
+        }
       }
 
       statusEl.classList.remove("win");

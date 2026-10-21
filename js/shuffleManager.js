@@ -20,6 +20,7 @@ import {
   resetSecret
 } from "./secrets.js";
 import { playSE } from "./sounds.js";
+import { reactionLines } from "./lines.js";
 
 // ========================================
 // シャッフル管理モジュール
@@ -43,6 +44,8 @@ export function createShuffleManager({
   recordClear,
   rewardSecretCoins,
   recordSecretHistory,
+  recordReaction,
+  recordSukaHistoryEntry,
   winGame,
   reset,
   startSecretPause,
@@ -98,6 +101,15 @@ export function createShuffleManager({
   // チャンスモード進行
   // ----------------------------------------
 
+  function recordShuffleOutcome(result) {
+    const reaction = reactionLines[result];
+    if (reaction) {
+      recordReaction(reaction.id);
+    } else {
+      recordSukaHistoryEntry();
+    }
+  }
+
   function handleChanceShuffle() {
     if (!state.chanceMode) {
       return false;
@@ -116,6 +128,7 @@ export function createShuffleManager({
       if (state.cleared) {
         winGame(false, true);
       } else {
+        recordShuffleOutcome(state.letters.join(""));
         statusEl.textContent =
           "まだまだ！ もう一回シャッフル！";
 
@@ -347,6 +360,7 @@ export function createShuffleManager({
     if (state.cleared) {
       winGame();
     } else {
+      recordShuffleOutcome(state.letters.join(""));
       statusEl.textContent =
         "まだまだ！ もう一回シャッフル！";
 
