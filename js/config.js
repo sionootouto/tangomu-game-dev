@@ -2,8 +2,8 @@ export const target = "tangomu";
 export const DEBUG_MODE = false;
 export const CHANCE_UPGRADE_RATES = [
   1 / 20,
-  1 / 15,
-  1 / 12,
+  1 / 16,
+  1 / 13,
   1 / 10,
   1 / 8,
   1 / 6,

@@ -69,8 +69,20 @@
     <div class="count">
       ドパコイン：<span id="coins">0</span>
     </div>
-
     
+    <div class="gacha-item-actions">
+      <button id="useWaterBottle" class="secondary" type="button">
+        💧 水を使う
+      </button>
+      <small>所持数1個につき30秒間、チャンスを停止（最大300秒・クールタイム3分）</small>
+      <button id="useIpad" class="secondary" type="button">
+        📱 iPadを使う
+      </button>
+      <small>30秒間自動シャッフル（クールタイム3分）。1個で0.1秒ごと、最大約0.029秒ごとに1回</small>
+    </div>
+    <p id="gachaAbilityStatus" role="status" aria-live="polite"></p>
+
+
 <div class="menu-buttons">
   <button id="openUpgrade" class="secondary">
     ⬆️ アップグレード

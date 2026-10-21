@@ -211,6 +211,123 @@
 }
 
 /* ========================================
+   DOPA FEVER延長演出
+======================================== */
+
+.dopa-fever {
+  position: fixed;
+  inset: 0;
+  z-index: 100002;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: rgba(30, 3, 45, 0.84);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.dopa-fever.active {
+  opacity: 1;
+}
+
+.dopa-fever-flash {
+  position: absolute;
+  inset: -50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent,
+    rgba(255, 230, 109, 0.8),
+    rgba(255, 45, 149, 0.55),
+    transparent,
+    rgba(139, 92, 246, 0.7),
+    transparent
+  );
+  animation: dopaFeverSpin 1.8s linear infinite;
+}
+
+.dopa-fever-content {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  width: min(92vw, 560px);
+  padding: 26px 18px;
+  border: 3px solid #ffe66d;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #581c87, #be185d 55%, #7c2d12);
+  box-shadow:
+    0 0 24px #f0abfc,
+    0 0 70px rgba(255, 230, 109, 0.8),
+    inset 0 0 30px rgba(255, 255, 255, 0.18);
+  color: #fff;
+  text-align: center;
+  transform: scale(0.35) rotate(-8deg);
+}
+
+.dopa-fever.active .dopa-fever-content {
+  animation: dopaFeverBurst 1.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.dopa-fever-label {
+  color: #fff3a3;
+  font-size: clamp(12px, 3.5vw, 17px);
+  font-weight: 900;
+  letter-spacing: 0.2em;
+}
+
+.dopa-fever-content strong {
+  color: #fff;
+  font-size: clamp(38px, 11vw, 72px);
+  font-style: italic;
+  font-weight: 1000;
+  line-height: 1;
+  text-shadow:
+    0 0 8px #fff,
+    0 0 22px #ffdf52,
+    0 0 45px #ff2d95;
+}
+
+.dopa-fever-message {
+  color: #fff3a3;
+  font-size: clamp(18px, 5vw, 26px);
+  font-weight: 900;
+}
+
+@keyframes dopaFeverSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dopaFeverBurst {
+  0% {
+    opacity: 0;
+    transform: scale(0.35) rotate(-8deg);
+  }
+
+  18% {
+    opacity: 1;
+    transform: scale(1.08) rotate(2deg);
+  }
+
+  32% {
+    transform: scale(0.96) rotate(-1deg);
+  }
+
+  45%,
+  78% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.1) rotate(3deg);
+  }
+}
+
+/* ========================================
    DOPA CHANCE 効果説明画面
 ======================================== */
 

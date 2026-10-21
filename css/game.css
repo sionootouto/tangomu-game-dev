@@ -47,10 +47,14 @@
   letter-spacing: .04em;
 }
 
+.buttons.has-dopa-skill {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+}
+
 .buttons.has-dopa-skill #shuffle,
 .buttons.has-dopa-skill #dopaSkillActivate {
-  flex: 1 1 calc(50% - 5px);
-  width: calc(50% - 5px);
+  width: 100%;
   min-width: 0;
 }
 
@@ -103,6 +107,34 @@
   margin-top: 8px;
   font-size: .9rem;
   color: #9291a4;
+}
+
+.gacha-item-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.gacha-item-actions small {
+  color: #77768a;
+  font-size: .68rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.gacha-item-actions button {
+  padding: 10px 8px;
+  font-size: .85rem;
+}
+
+#gachaAbilityStatus {
+  min-height: 1.4em;
+  margin: 8px 0 0;
+  color: #6c5ce7;
+  font-size: .78rem;
+  text-align: center;
 }
 
 /* キラキラ */

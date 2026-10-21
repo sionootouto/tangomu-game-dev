@@ -246,7 +246,7 @@ export const achievements = [
   {
     id: "jirikikoime",
     name: "地力濃いめ",
-    description: "「たんもぐ」を累計3回引く。",
+    description: "「たんもぐ」を累計5回引く。",
     visibility: "secret",
     condition: (saveData) =>
       (saveData.reactionCounts?.[16] ?? 0) >= 5

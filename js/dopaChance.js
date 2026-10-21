@@ -9,6 +9,8 @@ import {
 // ========================================
 
 const DOPA_CHANCE_DURATION = 60 * 1000;
+const DOPA_FEVER_EXTENSION = 30 * 1000;
+const DOPA_FEVER_ANIMATION_DURATION = 1800;
 
 // ========================================
 // DOPA CHANCEの管理
@@ -19,6 +21,8 @@ let dopaChanceEndTime = 0;
 let dopaChanceInterval = null;
 let dopaBanner = null;
 let dopaEntranceTimer = null;
+let dopaFeverTimer = null;
+let dopaFeverOverlay = null;
 
 // ========================================
 // DOPA CHANCEの状態確認
@@ -29,6 +33,51 @@ export function isDopaChanceActive() {
 }
 
 // ========================================
+// DOPA FEVER
+// ========================================
+
+export function triggerDopaFever(statusEl) {
+  if (!dopaChanceActive) {
+    return false;
+  }
+
+  dopaChanceEndTime += DOPA_FEVER_EXTENSION;
+  statusEl.textContent = "🔥 DOPA FEVER!! 残り時間が30秒延長！ 🔥";
+  playSE("dopaEnter");
+
+  if (dopaFeverTimer !== null) {
+    clearTimeout(dopaFeverTimer);
+  }
+  dopaFeverOverlay?.remove();
+
+  dopaFeverOverlay = document.createElement("div");
+  dopaFeverOverlay.className = "dopa-fever";
+  dopaFeverOverlay.setAttribute("role", "status");
+  dopaFeverOverlay.setAttribute("aria-live", "assertive");
+  dopaFeverOverlay.innerHTML = `
+    <div class="dopa-fever-flash"></div>
+    <div class="dopa-fever-content">
+      <span class="dopa-fever-label">BONUS TIME +30 SEC</span>
+      <strong>DOPA FEVER!!</strong>
+      <span class="dopa-fever-message">チャンス延長！</span>
+    </div>
+  `;
+  document.body.appendChild(dopaFeverOverlay);
+
+  requestAnimationFrame(() => {
+    dopaFeverOverlay?.classList.add("active");
+  });
+
+  dopaFeverTimer = setTimeout(() => {
+    dopaFeverOverlay?.remove();
+    dopaFeverOverlay = null;
+    dopaFeverTimer = null;
+  }, DOPA_FEVER_ANIMATION_DURATION);
+
+  return true;
+}
+
+// ========================================
 // DOPA CHANCE突入演出
 // ========================================
 
@@ -36,6 +85,8 @@ export function showDopaEntrance({
   statusEl,
   setAnimationLock,
   updateButtons,
+  durationSeconds = 60,
+  dopaTangomuRate = 1 / 3,
   startDopaChance
 }) {
   setAnimationLock(true);
@@ -78,7 +129,7 @@ export function showDopaEntrance({
           </div>
 
           <div class="dopa-info-subheading">
-            60秒間のスペシャルチャンス！
+            ${durationSeconds}秒間のスペシャルチャンス！
           </div>
 
           <div class="dopa-info-item">
@@ -100,7 +151,9 @@ export function showDopaEntrance({
           <div class="dopa-info-item">
             <span>🎯</span>
             <div>
-              <strong>たんごむチャンス成功率 1/3！</strong>
+              <strong>たんごむチャンス成功率 ${Math.round(
+                dopaTangomuRate * 1000
+              ) / 10}%！</strong>
               <small>チャンスをつかみ取れ！</small>
             </div>
           </div>
@@ -143,13 +196,17 @@ export function showDopaEntrance({
 // DOPA CHANCE開始
 // ========================================
 
-export function startDopaChance(statusEl) {
+export function startDopaChance(
+  statusEl,
+  durationBonus = 0
+) {
   dopaChanceActive = true;
   document.body.classList.add("dopa-rainbow");
 
   startDopaBGM();
 
-  dopaChanceEndTime = Date.now() + DOPA_CHANCE_DURATION;
+  dopaChanceEndTime =
+    Date.now() + DOPA_CHANCE_DURATION + durationBonus;
 
   if (dopaChanceInterval !== null) {
     clearInterval(dopaChanceInterval);
@@ -220,6 +277,13 @@ export function endDopaChance() {
   if (dopaBanner) {
     dopaBanner.hidden = true;
   }
+
+  if (dopaFeverTimer !== null) {
+    clearTimeout(dopaFeverTimer);
+    dopaFeverTimer = null;
+  }
+  dopaFeverOverlay?.remove();
+  dopaFeverOverlay = null;
 
   dopaChanceEndTime = 0;
 }

@@ -22,10 +22,9 @@ export function shuffledCopy() {
 
 export function createChanceLetters(
   dopaChanceActive = false,
-  dopaTangomuRate = 1 / 3,
+  chanceSuccessRate,
   guaranteedLetterCount = 3
 ) {
-  const guaranteedPrefix = target.slice(0, guaranteedLetterCount);
   const result = target.slice(guaranteedLetterCount).split("");
 
   // 文字をランダムに並べ替える
@@ -34,23 +33,48 @@ export function createChanceLetters(
     [result[i], result[j]] = [result[j], result[i]];
   }
 
-  // DOPA CHANCE中でなければ通常の順番抽選
-  if (!dopaChanceActive) {
+  const correctLetters = target
+    .slice(guaranteedLetterCount)
+    .split("");
+  const correctString = correctLetters.join("");
+  const baseSuccessRate = 1 / factorial(result.length);
+  const targetSuccessRate =
+    chanceSuccessRate ??
+    (dopaChanceActive ? 1 / 3 : baseSuccessRate);
+
+  if (dopaChanceActive) {
+    if (Math.random() < targetSuccessRate) {
+      return correctLetters;
+    }
+
+    // 失敗時に、ランダム順が偶然正解になるのを防ぐ。
+    if (result.length > 1 && result.join("") === correctString) {
+      [result[0], result[1]] = [result[1], result[0]];
+    }
+
     return result;
   }
 
-  // DOPA CHANCE中は1/3の確率で「gomu」を完成させる
-  if (Math.random() < dopaTangomuRate) {
-    return target.slice(guaranteedLetterCount).split("");
-  }
-
-  // 成功しない場合、残り文字が正解順になっていたら崩す
   if (
-    result.length > 1 &&
-    result.join("") === target.slice(guaranteedPrefix.length)
+    targetSuccessRate > baseSuccessRate &&
+    result.join("") !== correctString
   ) {
-    [result[0], result[1]] = [result[1], result[0]];
+    const additionalSuccessRate =
+      (targetSuccessRate - baseSuccessRate) /
+      (1 - baseSuccessRate);
+
+    if (Math.random() < additionalSuccessRate) {
+      return correctLetters;
+    }
   }
 
+  return result;
+}
+
+function factorial(value) {
+  let result = 1;
+  for (let factor = 2; factor <= value; factor++) {
+    result *= factor;
+  }
   return result;
 }

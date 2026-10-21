@@ -10,7 +10,8 @@ import { drawRareString } from "./rareStrings.js";
 import {
   isDopaChanceActive,
   showDopaEntrance,
-  startDopaChance
+  startDopaChance,
+  triggerDopaFever
 } from "./dopaChance.js";
 import {
   startSecret,
@@ -21,14 +22,19 @@ import {
 } from "./secrets.js";
 import { playSE } from "./sounds.js";
 import { reactionLines } from "./lines.js";
+import {
+  getChanceRateMultiplier,
+  getChanceSuccessRate,
+  getDopaDurationBonus,
+  getFamichikiMultiplier
+} from "./gachaAbilities.js";
 
 // ========================================
 // シャッフル管理モジュール
 // ========================================
 
-const DOPA_CHANCE_RATE = 1 / 777;
+const DOPA_CHANCE_RATE = 1 / 500;
 const DOPA_CHANCE_MULTIPLIER = 2;
-const DOPA_TANGOMU_RATE = 1 / 3;
 
 /**
  * ゲームの状態と必要な処理を受け取り、
@@ -192,11 +198,13 @@ export function createShuffleManager({
   // ----------------------------------------
 
   function tryDopaChance() {
-    if (
-      isDopaChanceActive() ||
-      Math.random() >= DOPA_CHANCE_RATE
-    ) {
+    if (Math.random() >= DOPA_CHANCE_RATE) {
       return false;
+    }
+
+    if (isDopaChanceActive()) {
+      triggerDopaFever(statusEl);
+      return true;
     }
 
     state.saveData.totalDopaChances =
@@ -205,13 +213,24 @@ export function createShuffleManager({
     persistSave();
     updateAchievements();
 
+    const durationBonus = getDopaDurationBonus(
+      state.saveData.gachaItems
+    );
+
     showDopaEntrance({
       statusEl,
       setAnimationLock: (value) => {
         state.animationLock = value;
       },
       updateButtons,
-      startDopaChance: () => startDopaChance(statusEl)
+      durationSeconds: 60 + durationBonus / 1000,
+      dopaTangomuRate: getChanceSuccessRate(
+        state.saveData.gachaItems,
+        true,
+        3
+      ),
+      startDopaChance: () =>
+        startDopaChance(statusEl, durationBonus)
     });
 
     return true;
@@ -223,7 +242,8 @@ export function createShuffleManager({
 
   function tryRareString() {
     const rareString = drawRareString(
-      isDopaChanceActive()
+      isDopaChanceActive(),
+      getFamichikiMultiplier(state.saveData.gachaItems)
     );
 
     if (rareString === null) {
@@ -256,13 +276,26 @@ export function createShuffleManager({
   // ----------------------------------------
 
   function tryChanceMode() {
+    if (state.chanceSuppressedUntil > Date.now()) {
+      return false;
+    }
+
     const dopaActive = isDopaChanceActive();
     const chanceRate =
       CHANCE_UPGRADE_RATES[state.saveData.chanceUpgradeLevel] ?? CHANCE;
 
     const chanceProbability = dopaActive
-      ? Math.min(chanceRate * DOPA_CHANCE_MULTIPLIER, 1)
-      : chanceRate;
+      ? Math.min(
+          chanceRate *
+            getChanceRateMultiplier(state.saveData.gachaItems) *
+            DOPA_CHANCE_MULTIPLIER,
+          1
+        )
+      : Math.min(
+          chanceRate *
+            getChanceRateMultiplier(state.saveData.gachaItems),
+          1
+        );
 
     if (Math.random() >= chanceProbability) {
       return false;
@@ -278,7 +311,11 @@ export function createShuffleManager({
 
     state.chanceLetters = createChanceLetters(
       dopaActive,
-      DOPA_TANGOMU_RATE,
+      getChanceSuccessRate(
+        state.saveData.gachaItems,
+        dopaActive,
+        chanceType.guaranteedLetters
+      ),
       chanceType.guaranteedLetters
     );
 

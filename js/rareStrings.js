@@ -19,10 +19,14 @@ export const rareStrings = [
 // レア文字列抽選
 // ========================================
 
-export function drawRareString(dopaChanceActive = false) {
+export function drawRareString(
+  dopaChanceActive = false,
+  itemMultiplier = 1
+) {
   const roll = Math.floor(Math.random() * 600000);
 
-  const multiplier = dopaChanceActive ? 10 : 1;
+  const multiplier =
+    (dopaChanceActive ? 10 : 1) * itemMultiplier;
 
   if (roll < 240 * multiplier) {
     return rareStrings[

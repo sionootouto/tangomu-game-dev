@@ -1,6 +1,6 @@
 import { GACHA_ITEMS } from "./gachaItems.js";
 
-const SAVE_KEY = "tangomu-save-v1";
+export const SAVE_KEY = "tangomu-save-v1";
 // Reaction IDs are 1-24; secret history IDs continue from 25.
 export const SECRET_HISTORY_ID_OFFSET = 24;
 export const SUKA_HISTORY_ENTRY = "Suka";
@@ -11,13 +11,15 @@ const DEFAULT_SAVE = {
   normalShuffleClears: 0,
   chanceClears: 0,
   clearedWithin100Shuffles: false,
-  coins: 0,
+  coins: 10000,
   chanceUpgradeLevel: 0,
   chanceGuaranteedLettersLevel: 0,
   chanceTypeUpgradeLevel: 0,
   dopaSkillUnlocked: false,
   dopaSkillUpgradeLevel: 0,
   dopaSkillLastUsedAt: 0,
+  waterBottleLastUsedAt: 0,
+  ipadLastUsedAt: 0,
   totalDopaChances: 0,
   totalGachaDraws: 0,
   reactionHistory: [],
@@ -115,6 +117,18 @@ export function loadSave() {
         Number.isSafeInteger(data.dopaSkillLastUsedAt) &&
         data.dopaSkillLastUsedAt >= 0
           ? data.dopaSkillLastUsedAt
+          : 0,
+
+      waterBottleLastUsedAt:
+        Number.isSafeInteger(data.waterBottleLastUsedAt) &&
+        data.waterBottleLastUsedAt >= 0
+          ? data.waterBottleLastUsedAt
+          : 0,
+
+      ipadLastUsedAt:
+        Number.isSafeInteger(data.ipadLastUsedAt) &&
+        data.ipadLastUsedAt >= 0
+          ? data.ipadLastUsedAt
           : 0,
 
       totalDopaChances:

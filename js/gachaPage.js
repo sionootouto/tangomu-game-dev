@@ -66,9 +66,41 @@ function renderInventory(newItemIds = []) {
     count.className = "gacha-item-count";
     count.textContent = `${itemCounts[item.id] ?? 0} 個`;
 
-    card.append(image, name, count);
+    const ability = document.createElement("small");
+    ability.className = "gacha-item-ability";
+    ability.textContent = item.ability;
+
+    card.append(image, name, count, ability);
+    if (item.id === "chopsticks") {
+      const eatButton = document.createElement("button");
+      eatButton.className = "eat-chopsticks-button";
+      eatButton.type = "button";
+      eatButton.textContent = "割り箸を食べる";
+      eatButton.disabled = isDrawing || (itemCounts.chopsticks ?? 0) < 1;
+      eatButton.addEventListener("click", eatChopsticks);
+      card.appendChild(eatButton);
+    }
     inventory.appendChild(card);
   });
+}
+
+function eatChopsticks() {
+  const chopsticksCount = saveData.gachaItems.chopsticks ?? 0;
+  if (isDrawing || chopsticksCount < 1) {
+    return;
+  }
+
+  saveData.gachaItems.chopsticks = chopsticksCount - 1;
+  if (!saveGame(saveData)) {
+    saveData.gachaItems.chopsticks = chopsticksCount;
+    status.textContent = "保存できなかったため、割り箸を食べられませんでした。";
+    refresh();
+    return;
+  }
+
+  status.textContent = "割り箸をね、バリボリ食うのが一番うまいんですわ。";
+  playSE("eatingChopsticks");
+  refresh();
 }
 
 function rollItem() {

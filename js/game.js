@@ -11,9 +11,18 @@ import {
 } from "./config.js";
 import { shuffledCopy } from "./shuffle.js";
 import {
+  getDopaDurationBonus,
+  getIpadDuration,
+  getIpadShufflesPerSecond,
+  rollParkingTicketBonus,
+  getTwoYenChance,
+  getWaterBottleDuration
+} from "./gachaAbilities.js";
+import {
   loadSave,
   saveGame,
   deleteSave,
+  SAVE_KEY,
   SECRET_HISTORY_ID_OFFSET,
   SUKA_HISTORY_ENTRY
 } from "./save.js";
@@ -40,7 +49,8 @@ import { createResetHandler } from "./reset.js";
 import { setupCollectionUI } from "./collectionUI.js";
 import {
   isDopaChanceActive,
-  startDopaChance
+  startDopaChance,
+  triggerDopaFever
 } from "./dopaChance.js";
 
 // ========================================
@@ -58,7 +68,9 @@ const state = {
   chanceStep: 0,
   animationLock: false,
   secretTimer: null,
-  animationLockTimer: null
+  animationLockTimer: null,
+  chanceSuppressedUntil: 0,
+  autoShuffleUntil: 0
 };
 
 // ========================================
@@ -79,7 +91,21 @@ const debugEeteButton = document.getElementById("debugEete");
 const debugTangomuButton = document.getElementById("debugTangomu");
 const confettiEl = document.getElementById("confetti");
 const chanceOverlay = document.getElementById("chanceOverlay");
+const gachaAbilityStatusEl = document.getElementById(
+  "gachaAbilityStatus"
+);
+const useWaterBottleButton = document.getElementById("useWaterBottle");
+const useIpadButton = document.getElementById("useIpad");
 const gameButtons = document.querySelectorAll(".buttons button");
+let autoShuffleTimer = null;
+let autoShuffleInterval = null;
+const GACHA_ABILITY_COOLDOWN = 3 * 60 * 1000;
+
+function formatCooldownRemaining(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = String(seconds % 60).padStart(2, "0");
+  return `${minutes}:${remainingSeconds}`;
+}
 
 // ========================================
 // デバッグボタンの表示設定
@@ -118,6 +144,28 @@ function updateAchievements() {
 
 function recordShuffle() {
   state.saveData.totalShuffles++;
+  const abilityMessages = [];
+
+  if (Math.random() < getTwoYenChance(state.saveData.gachaItems)) {
+    state.saveData.coins += 2;
+    coinsEl.textContent = String(state.saveData.coins);
+    abilityMessages.push("2円の効果で2コイン獲得！");
+  }
+
+  const parkingTicketBonus = rollParkingTicketBonus(
+    state.saveData.gachaItems
+  );
+  if (parkingTicketBonus > 0) {
+    state.count += parkingTicketBonus;
+    countEl.textContent = String(state.count);
+    abilityMessages.push(
+      `駐車券の効果で追加+${parkingTicketBonus}カウント！`
+    );
+  }
+
+  if (abilityMessages.length > 0) {
+    gachaAbilityStatusEl.textContent = abilityMessages.join(" ");
+  }
   persistSave();
   updateAchievements();
 }
@@ -220,6 +268,85 @@ function updateButtons() {
     "aria-disabled",
     String(!canResetCount)
   );
+  refreshGachaAbilityUI();
+}
+
+function refreshGachaAbilityUI() {
+  const now = Date.now();
+  if (
+    state.chanceSuppressedUntil > 0 &&
+    state.chanceSuppressedUntil <= now
+  ) {
+    state.chanceSuppressedUntil = 0;
+    if (gachaAbilityStatusEl.textContent.startsWith("水を使いました。")) {
+      gachaAbilityStatusEl.textContent =
+        "たんごむチャンス停止が終了しました。";
+    }
+  }
+  const waterRemaining = Math.max(
+    0,
+    Math.ceil((state.chanceSuppressedUntil - now) / 1000)
+  );
+  const waterCooldownRemaining = Math.max(
+    0,
+    Math.ceil(
+      (
+        state.saveData.waterBottleLastUsedAt +
+        GACHA_ABILITY_COOLDOWN -
+        now
+      ) / 1000
+    )
+  );
+  const autoShuffleRemaining = Math.max(
+    0,
+    Math.ceil((state.autoShuffleUntil - now) / 1000)
+  );
+  const ipadCooldownRemaining = Math.max(
+    0,
+    Math.ceil(
+      (
+        state.saveData.ipadLastUsedAt +
+        GACHA_ABILITY_COOLDOWN -
+        now
+      ) / 1000
+    )
+  );
+  const ipadRate = getIpadShufflesPerSecond(
+    state.saveData.gachaItems
+  );
+  const ipadIntervalLabel = ipadRate > 0
+    ? `約${(1 / ipadRate).toFixed(3)}秒ごと`
+    : "未所持";
+  const canActivate =
+    !state.animationLock && !state.cleared;
+
+  useWaterBottleButton.textContent = waterRemaining > 0
+    ? `💧 チャンス停止中 ${waterRemaining}秒`
+    : waterCooldownRemaining > 0
+      ? `💧 水の再使用まで ${formatCooldownRemaining(
+          waterCooldownRemaining
+        )}`
+      : `💧 水を使う ×${state.saveData.gachaItems.waterBottle ?? 0}（${Math.floor(
+          getWaterBottleDuration(state.saveData.gachaItems) / 1000
+        )}秒）`;
+  useWaterBottleButton.disabled =
+    !canActivate ||
+    waterRemaining > 0 ||
+    waterCooldownRemaining > 0 ||
+    (state.saveData.gachaItems.waterBottle ?? 0) < 1;
+
+  useIpadButton.textContent = autoShuffleRemaining > 0
+    ? `📱 自動シャッフル中 ${autoShuffleRemaining}秒・${ipadIntervalLabel}`
+    : ipadCooldownRemaining > 0
+      ? `📱 iPadの再使用まで ${formatCooldownRemaining(
+          ipadCooldownRemaining
+        )}`
+      : `📱 iPadを使う ×${state.saveData.gachaItems.ipad ?? 0}（30秒・${ipadIntervalLabel}）`;
+  useIpadButton.disabled =
+    !canActivate ||
+    autoShuffleRemaining > 0 ||
+    ipadCooldownRemaining > 0 ||
+    (state.saveData.gachaItems.ipad ?? 0) < 1;
 }
 
 // ========================================
@@ -345,6 +472,109 @@ const shuffleManager = createShuffleManager({
   statusEl,
   sparkleEl,
   confettiEl
+});
+
+useWaterBottleButton.addEventListener("click", () => {
+  const duration = getWaterBottleDuration(state.saveData.gachaItems);
+  const now = Date.now();
+  const previousLastUsedAt = state.saveData.waterBottleLastUsedAt;
+  const cooldownUntil =
+    previousLastUsedAt + GACHA_ABILITY_COOLDOWN;
+  if (
+    state.chanceSuppressedUntil > now ||
+    cooldownUntil > now ||
+    duration < 1
+  ) {
+    return;
+  }
+
+  state.saveData.waterBottleLastUsedAt = now;
+  if (!persistSave()) {
+    state.saveData.waterBottleLastUsedAt = previousLastUsedAt;
+    gachaAbilityStatusEl.textContent =
+      "保存できなかったため、水を使用できませんでした。";
+    refreshGachaAbilityUI();
+    return;
+  }
+
+  state.chanceSuppressedUntil = now + duration;
+  gachaAbilityStatusEl.textContent =
+    `水を使いました。たんごむチャンスを${duration / 1000}秒間停止します。3分後に再使用できます。`;
+  refreshGachaAbilityUI();
+});
+
+function stopAutoShuffle(message = "") {
+  if (autoShuffleTimer !== null) {
+    clearInterval(autoShuffleTimer);
+    autoShuffleTimer = null;
+  }
+  if (autoShuffleInterval !== null) {
+    clearInterval(autoShuffleInterval);
+    autoShuffleInterval = null;
+  }
+
+  state.autoShuffleUntil = 0;
+  if (message) {
+    gachaAbilityStatusEl.textContent = message;
+  }
+  refreshGachaAbilityUI();
+}
+
+useIpadButton.addEventListener("click", () => {
+  const duration = getIpadDuration(state.saveData.gachaItems);
+  const now = Date.now();
+  if (
+    state.autoShuffleUntil > now ||
+    state.saveData.ipadLastUsedAt + GACHA_ABILITY_COOLDOWN > now ||
+    duration < 1
+  ) {
+    return;
+  }
+
+  const previousLastUsedAt = state.saveData.ipadLastUsedAt;
+  state.saveData.ipadLastUsedAt = now;
+  if (!persistSave()) {
+    state.saveData.ipadLastUsedAt = previousLastUsedAt;
+    gachaAbilityStatusEl.textContent =
+      "保存できなかったため、iPadを使用できませんでした。";
+    refreshGachaAbilityUI();
+    return;
+  }
+
+  state.autoShuffleUntil = now + duration;
+  const shufflesPerSecond = getIpadShufflesPerSecond(
+    state.saveData.gachaItems
+  );
+  const shuffleInterval = 1000 / shufflesPerSecond;
+  gachaAbilityStatusEl.textContent =
+    `iPadを使いました。30秒間、約${(shuffleInterval / 1000).toFixed(
+      3
+    )}秒ごとに1回シャッフルします。`;
+
+  autoShuffleInterval = setInterval(() => {
+    if (Date.now() >= state.autoShuffleUntil) {
+      stopAutoShuffle("自動シャッフルが終了しました。");
+      return;
+    }
+
+    if (state.cleared) {
+      reset();
+    }
+
+    if (!state.animationLock) {
+      shuffleManager.shuffle();
+    }
+  }, shuffleInterval);
+
+  autoShuffleTimer = setInterval(() => {
+    if (Date.now() >= state.autoShuffleUntil) {
+      stopAutoShuffle("自動シャッフルが終了しました。");
+      return;
+    }
+
+    refreshGachaAbilityUI();
+  }, 1000);
+  refreshGachaAbilityUI();
 });
 
 // ========================================
@@ -569,15 +799,16 @@ function refreshDopaSkillUI() {
     return;
   }
 
-  dopaSkillDescription.textContent =
-    "発動するとDOPA CHANCEが60秒間続きます。";
-  dopaSkillActivateButton.textContent = active
-    ? "DOPA CHANCE発動中"
-    : remaining > 0
-      ? `再使用まで ${formatCooldown(remaining)}`
-      : "DOPA CHANCEを発動";
+  dopaSkillDescription.textContent = active
+    ? "DOPA CHANCE中に発動すると、DOPA FEVERで30秒延長します。"
+    : "発動するとDOPA CHANCEが60秒間続きます。";
+  dopaSkillActivateButton.textContent = remaining > 0
+    ? `再使用まで ${formatCooldown(remaining)}`
+    : active
+      ? "DOPA FEVER"
+      : "DOPA CHANCE";
   dopaSkillActivateButton.disabled =
-    active || state.animationLock || remaining > 0;
+    state.animationLock || remaining > 0;
 
   if (nextCost === undefined) {
     dopaSkillUpgradeDescription.textContent =
@@ -738,31 +969,39 @@ dopaSkillActivateButton.addEventListener("click", () => {
 
   const cooldown =
     DOPA_SKILL_COOLDOWNS[state.saveData.dopaSkillUpgradeLevel];
-  if (
-    isDopaChanceActive() ||
-    Date.now() < state.saveData.dopaSkillLastUsedAt + cooldown
-  ) {
+  if (Date.now() < state.saveData.dopaSkillLastUsedAt + cooldown) {
     refreshDopaSkillUI();
     return;
   }
 
+  const isDopaFever = isDopaChanceActive();
   const previousLastUsedAt = state.saveData.dopaSkillLastUsedAt;
+  const previousTotalDopaChances = state.saveData.totalDopaChances ?? 0;
   state.saveData.dopaSkillLastUsedAt = Date.now();
-  state.saveData.totalDopaChances =
-    (state.saveData.totalDopaChances ?? 0) + 1;
+  state.saveData.totalDopaChances = previousTotalDopaChances + 1;
 
   if (!persistSave()) {
     state.saveData.dopaSkillLastUsedAt = previousLastUsedAt;
-    state.saveData.totalDopaChances--;
+    state.saveData.totalDopaChances = previousTotalDopaChances;
     dopaSkillStatus.textContent =
       "保存できなかったため、技を発動できませんでした。";
     refreshUpgradeUI();
     return;
   }
 
-  startDopaChance(statusEl);
+  if (isDopaFever) {
+    triggerDopaFever(statusEl);
+  } else {
+    startDopaChance(
+      statusEl,
+      getDopaDurationBonus(state.saveData.gachaItems)
+    );
+  }
+
   updateAchievements();
-  dopaSkillStatus.textContent = "DOPA CHANCEを発動しました！";
+  dopaSkillStatus.textContent = isDopaFever
+    ? "DOPA FEVER発動！ 残り時間を延長しました！"
+    : "DOPA CHANCEを発動しました！";
   refreshUpgradeUI();
 });
 
@@ -778,6 +1017,14 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+function refreshSavedData() {
+  state.saveData = loadSave();
+  coinsEl.textContent = String(state.saveData.coins);
+  refreshUpgradeUI();
+  refreshGachaAbilityUI();
+  refreshAchievementList();
+}
+
 // ========================================
 // 初期化
 // ========================================
@@ -785,6 +1032,21 @@ document.addEventListener("keydown", (event) => {
 reset();
 coinsEl.textContent = String(state.saveData.coins);
 refreshUpgradeUI();
-setInterval(refreshDopaSkillUI, 1000);
+setInterval(() => {
+  refreshDopaSkillUI();
+  refreshGachaAbilityUI();
+}, 1000);
 updateButtons();
 updateAchievements();
+
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) {
+    refreshSavedData();
+  }
+});
+
+window.addEventListener("storage", (event) => {
+  if (event.key === SAVE_KEY) {
+    refreshSavedData();
+  }
+});

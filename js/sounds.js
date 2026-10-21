@@ -7,7 +7,9 @@ const soundFiles = {
   superChance: "../sounds/superchance.mp3",
   hyperChance: "../sounds/hyperchance.mp3",
   chanceMiss: "../sounds/chance-miss.mp3",
+  
   breakChopsticks: "../sounds/break-chopsticks.mp3",
+  eatingChopsticks: "../sounds/eating-chopsticks.mp3",
   gachaSuka: "../sounds/gacha-suka.mp3",
   gachaCollect: "../sounds/gacha-collect.mp3",
 
